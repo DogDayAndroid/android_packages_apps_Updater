@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+          package="win.arbitrarilytong.settings">
+
+    <application
+            android:allowBackup="true"
+            android:dataExtractionRules="@xml/data_extraction_rules"
+            android:fullBackupContent="@xml/backup_rules"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:supportsRtl="true"
+            android:theme="@style/Theme.ArbitrarilyTongSettings"
+            tools:targetApi="31">
+        <activity
+                android:name=".content_main"
+                android:exported="false"
+                android:label="@string/title_activity_content_main"
+                android:theme="@style/Theme.ArbitrarilyTongSettings.NoActionBar"/>
+        <activity
+                android:name=".KernelSU"
+                android:exported="false"
+                android:label="@string/title_activity_kernel_su"
+                android:theme="@style/Theme.ArbitrarilyTongSettings.NoActionBar"/>
+        <activity
+                android:name=".MainActivity"
+                android:exported="true"
+                android:label="@string/tong_title"
+                android:launchMode="singleTask"
+                android:theme="@style/Theme.ArbitrarilyTongSettings">
+            <intent-filter android:priority="100">
+                <action android:name="com.android.settings.action.EXTRA_SETTINGS"/>
+            </intent-filter>
+
+            <!-- 应用显示在设置哪个目录 -->
+            <meta-data
+                    android:name="com.android.settings.category"
+                    android:value="com.android.settings.category.ia.system"/>
+            <!-- 应用显示名称 -->
+            <meta-data
+                    android:name="com.android.settings.title"
+                    android:value="@string/app_name"/>
+            <!-- 应用显示介绍 -->
+            <meta-data
+                    android:name="com.android.settings.summary"
+                    android:value="@string/summary"/>
+            <!-- 应用显示介绍 -->
+            <meta-data
+                    android:name="com.android.settings.icon"
+                    android:resource="@drawable/tong"/>
+        </activity>
+    </application>
+
+</manifest>

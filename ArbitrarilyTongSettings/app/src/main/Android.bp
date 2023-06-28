@@ -1,0 +1,35 @@
+android_app {
+    name: "ArbitrarilyTongSettings",
+
+    // Include SettingsLib and its dependencies
+    defaults: ["SettingsLibDefaults"],
+
+    srcs: [
+        "java/**/*.java",
+        "java/**/*.kt",
+    ],
+    resource_dirs: ["res"],
+
+    static_libs: [
+        "androidx.core_core-ktx",
+        "androidx.cardview_cardview",
+        "androidx.appcompat_appcompat",
+        "androidx.recyclerview_recyclerview",
+        "com.google.android.material_material",
+        "androidx.navigation_navigation-common-ktx",
+        "androidx.navigation_navigation-fragment-ktx",
+        "androidx.navigation_navigation-runtime-ktx",
+        "androidx.navigation_navigation-ui-ktx",
+        "androidx.lifecycle_lifecycle-livedata-ktx",
+        "androidx.lifecycle_lifecycle-viewmodel-ktx",
+    ],
+
+    platform_apis: true,
+    privileged: true,
+    certificate: "platform",
+    system_ext_specific: true,
+
+    optimize: {
+        enabled: false
+    },
+}
