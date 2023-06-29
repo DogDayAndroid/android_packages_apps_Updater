@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">ArbitrarilyTong 设置</string>
+    <!-- Strings used for fragments for navigation -->
+
+    <string name="tong_version_text">系统版本</string>
+    <string name="summary">你好，世界</string>
+    <string name="kernel_version_text">内核版本</string>
+    <string name="download_list_text">下载列表</string>
+
+    <!-- Update -->
+    <string name="text_check_update">检查更新</string>
+    <string name="update_version">版本：%1$s</string>
+    <string name="update_date">最后更新：%1$s</string>
+    <string name="update_size">大小：%1$s</string>
+    <string name="update_desc">更新信息：\n%1$s</string>
+    <string name="update_desc_none">没有更多信息了。</string>
+
+    <!-- ToolBar -->
+    <string name="text_refresh">刷新</string>
+    <string name="text_install_local">安装本地刷机包</string>
+    <string name="text_preference">首选项</string>
+    <string name="text_menu_copy_url">复制链接</string>
+    <string name="text_menu_delete_update">删除刷机包</string>
+    <string name="text_menu_update_log">更新日志</string>
+</resources>

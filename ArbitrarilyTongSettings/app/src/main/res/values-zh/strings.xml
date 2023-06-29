@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="app_name">ArbitrarilyTong 设置</string>
-    <string name="summary">调整你的 ArbitrarilyTong UI</string>
-    <string name="tong_version_text">ArbitrarilyTong 版本号</string>
-    <string name="action_settings">设置</string>
-    <string name="kernelsu_version_text">KernelSU 内核版本</string>
-    <string name="tong_title">关于 ArbitrarilyTong</string>
-</resources>

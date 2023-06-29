@@ -1,10 +1,14 @@
 # ArbitrarilyTong
 
-## TODO
+## W.I.P
 
-- Github Action to generate ROM packages
 - Update KernelSU
 - Update System
+
+## Use Github API
+
+- [Get All Release Info](https://api.github.com/repos/easterNday/Thyme-Kernel-Builder/releases)
+- [Get Release Info](https://api.github.com/repos/easterNday/Thyme-Kernel-Builder/releases/110402934)
 
 ## Credits
 

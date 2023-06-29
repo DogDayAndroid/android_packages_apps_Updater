@@ -1,0 +1,74 @@
+name: Generate ROM packages
+on:
+  push:
+    branches: [main]
+    paths:
+    - 'Settings/**'
+jobs:
+  gradle:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+        name: 🎃 Checkout Main Branch
+
+      - uses: actions/setup-java@v3
+        name: 🎆 Setup Java
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: 🎇 Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: 🧨 Build apps
+        working-directory: ${{ github.workspace }}/Settings
+        run: |
+          ./gradlew build
+
+      - name: ✨ Setup Application
+        working-directory: ${{ github.workspace }}
+        run: |
+          mkdir -p build
+          mkdir -p build/libs
+          mkdir -p build/src
+          mkdir -p build/res
+          mkdir -p build/src/data-binding
+          mkdir -p build/src/build_ouputs
+          mkdir -p build/src/buildConfig
+
+          # Move Permissions
+          mv privapp_whitelist_top.easterNday.settings.xml build/
+
+          # Move libs
+          mv libs/* build/libs/
+
+          # Move app src and res
+          mv Settings/app/src/main/java/top/easterNday/settings/* build/src/
+          mv Settings/app/src/main/res/* build/res/
+
+          # Clone Android Studio Data Binding
+          git clone -b studio-main https://android.googlesource.com/platform/frameworks/data-binding data-binding
+          mv data-binding/extensions/viewbinding/src/main/java/* build/src/data-binding/
+
+          # Copy data-binding `.java` to build
+          mv Settings/app/build/generated/data_binding_base_class_source_out/release/out/top/easterNday/settings/databinding/* build/src/build_ouputs/
+
+          # Copy build-config `.java` to build
+          mv Settings/app/build/generated/source/buildConfig/release/top/easterNday/settings/* build/src/buildConfig/
+
+          # Copy AndroidManifest.xml to build
+          mv Settings/app/src/main/AndroidManifest.xml build/AndroidManifest.xml
+
+          # Copy Android.bp to build
+          mv Android.bp build/Android.bp
+        
+      - name: 🎋 Deploy
+        uses: s0/git-publish-subdir-action@develop
+        env:
+          REPO: self
+          BRANCH: build
+          FOLDER: build
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+          package="top.easterNday.settings"
+          android:versionCode="1"
+          android:versionName="1.0.0">
+
+    <!-- 安装应用权限 -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+
+    <!-- 下载权限 -->
+    <uses-permission android:name="android.permission.ACCESS_DOWNLOAD_MANAGER"/>
+
+    <!-- 网络权限 -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
+
+    <!-- 读写权限 -->
+    <uses-permission
+            android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+            tools:ignore="ScopedStorage"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+
+    <!-- 其他权限 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+
+    <!-- 系统权限 -->
+    <uses-permission
+            android:name="android.permission.ACCESS_CACHE_FILESYSTEM"
+            tools:ignore="ProtectedPermissions"/>
+    <uses-permission
+            android:name="android.permission.REBOOT"
+            tools:ignore="ProtectedPermissions"/>
+    <uses-permission
+            android:name="android.permission.RECOVERY"
+            tools:ignore="ProtectedPermissions"/>
+    <uses-permission
+            android:name="android.permission.START_ACTIVITIES_FROM_BACKGROUND"
+            tools:ignore="ProtectedPermissions"/>
+
+    <application
+            android:allowBackup="true"
+            android:dataExtractionRules="@xml/data_extraction_rules"
+            android:fullBackupContent="@xml/backup_rules"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:supportsRtl="true"
+            android:theme="@style/Theme.ArbitrarilyTongSettings"
+            android:usesCleartextTraffic="true"
+            tools:targetApi="31">
+        <service
+                android:name=".Update.UpdateService"
+                android:enabled="true"
+                android:exported="true">
+        </service>
+
+        <activity
+                android:name=".MainActivity"
+                android:exported="true"
+                android:icon="@mipmap/ic_launcher"
+                android:launchMode="singleTask"
+                android:theme="@style/Theme.ArbitrarilyTongSettings">
+            <intent-filter android:priority="1">
+                <action android:name="com.android.settings.action.EXTRA_SETTINGS"/>
+            </intent-filter>
+
+            <!-- 官方更新入口，但是存在不能自定义圖標等问题，可以修改 Settings 实现 -->
+            <!--
+            <intent-filter android:priority="1">
+                <action android:name="android.settings.SYSTEM_UPDATE_SETTINGS" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            -->
+
+
+            <!-- 快捷方式支持 -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="com.android.settings.SHORTCUT"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+
+            <!-- 应用显示在设置哪个目录 -->
+            <meta-data
+                    android:name="com.android.settings.category"
+                    android:value="com.android.settings.category.ia.system"/>
+            <!-- 应用显示名称 -->
+            <meta-data
+                    android:name="com.android.settings.title"
+                    android:value="@string/app_name"/>
+            <!-- 应用显示介绍 -->
+            <meta-data
+                    android:name="com.android.settings.summary"
+                    android:value="@string/summary"/>
+            <!-- 应用显示介绍 -->
+            <meta-data
+                    android:name="com.android.settings.icon"
+                    android:resource="@drawable/tong"/>
+        </activity>
+    </application>
+
+</manifest>
