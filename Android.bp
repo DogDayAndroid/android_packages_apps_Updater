@@ -1,0 +1,110 @@
+java_import {
+    name: "okhttp-jvm-5.0.0-alpha.10",
+    jars: ["libs/okhttp-jvm-5.0.0-alpha.10.jar"],
+    //sdk_version: "current",
+    //min_sdk_version: "29",
+    host_supported: true,
+    installable: false,
+}
+
+//java_import {
+//    name: "okio-3.3.0-all",
+//    jars: ["libs/okio-3.3.0-all.jar"],
+//    sdk_version: "system_current",
+//    min_sdk_version: "29",
+//    host_supported: true,
+//    installable: false,
+//}
+
+
+java_import {
+    name: "okio-jvm-3.2.0",
+    jars: ["libs/okio-jvm-3.2.0.jar"],
+    //sdk_version: "current",
+    //min_sdk_version: "29",
+    host_supported: true,
+    installable: false,
+}
+
+android_library_import {
+    name: "xlog-1.11.0",
+    aars: ["libs/xlog-1.11.0.aar"],
+}
+
+android_app {
+	owner: "easterNday",
+    name: "DogDaySettings",
+    manifest: "AndroidManifest.xml",
+
+    //Replace crDroid Updater
+    overrides: ["Updater"],
+
+    // Include SettingsLib and its dependencies
+    defaults: ["SettingsLibDefaults"],
+
+    srcs: [
+        "src/**/*.java",
+        "src/**/*.kt",
+    ],
+    resource_dirs: ["res"],
+
+    libs: [
+    ],
+
+    static_libs: [
+        "androidx.core_core-ktx",
+        "androidx.cardview_cardview",
+        "androidx.fragment_fragment",
+        "androidx.appcompat_appcompat",
+        //"androidx.recyclerview_recyclerview",
+        //"androidx.recyclerview_recyclerview-selection",
+        "com.google.android.material_material",
+        "androidx.navigation_navigation-common-ktx",
+        "androidx.navigation_navigation-fragment-ktx",
+        "androidx.navigation_navigation-runtime-ktx",
+        "androidx.navigation_navigation-ui-ktx",
+        "androidx.navigation_navigation-ui",
+        //"androidx.lifecycle_lifecycle-livedata-ktx",
+        //"androidx.lifecycle_lifecycle-viewmodel-ktx",
+        //"androidx-constraintlayout_constraintlayout",
+        "kotlinx-coroutines-android",
+        "kotlinx-coroutines-core",
+        "okhttp-jvm-5.0.0-alpha.10",
+        //"okio-3.3.0-all",
+        "okio-jvm-3.2.0",
+        "xlog-1.11.0",
+    ],
+
+    //updatable: true,
+    privileged: true,
+    certificate: "platform",
+    system_ext_specific: true,
+    //sdk_version: "current",
+    //min_sdk_version: "29",
+    platform_apis: true,
+
+    optimize: {
+        enabled: false
+    },
+    //dex_preopt: {
+    //    enabled: false,
+    //},
+
+    //aaptflags: [
+    //   "--auto-add-overlay",
+    //   "--extra-packages",  
+    //   "com.squareup.okhttp3",
+    //],
+
+    required: [
+        "privapp_whitelist_top.easterNday.settings",
+    ],
+}
+
+prebuilt_etc {
+    name: "privapp_whitelist_top.easterNday.settings",
+    system_ext_specific: true,
+    sub_dir: "permissions",
+    src: "privapp_whitelist_top.easterNday.settings.xml",
+    filename_from_src: true,
+}

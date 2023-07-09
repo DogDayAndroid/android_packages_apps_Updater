@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView android:id="@+id/aboutScrollView"
+                                       xmlns:android="http://schemas.android.com/apk/res/android"
+                                       xmlns:app="http://schemas.android.com/apk/res-auto"
+                                       xmlns:tools="http://schemas.android.com/tools"
+                                       android:layout_width="match_parent"
+                                       android:layout_height="match_parent"
+                                       tools:context=".AboutFragment">
+
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <!--        <ImageButton-->
+        <!--                android:adjustViewBounds="true"-->
+        <!--                android:scaleType="centerInside"-->
+        <!--                android:background="@null"-->
+        <!--                android:layout_width="match_parent"-->
+        <!--                android:layout_height="match_parent"-->
+        <!--                app:srcCompat="@drawable/banner_light"-->
+        <!--                android:id="@+id/ArbitrarilyTongBanner"-->
+        <!--                app:layout_constraintStart_toStartOf="parent"-->
+        <!--                app:layout_constraintEnd_toEndOf="parent"/>-->
+
+        <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+            <ImageView
+                    android:src="@drawable/banner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scaleType="fitXY"
+                    android:adjustViewBounds="true"/>
+
+            <ImageView
+                    android:src="@drawable/tong_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="36dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="60dp"
+                    android:adjustViewBounds="true"
+                    android:scaleType="centerCrop"
+                    />
+
+        </RelativeLayout>
+
+        <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center|end"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="0dp"
+                android:layout_marginTop="15dp">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                <LinearLayout
+                        android:orientation="vertical"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="24dp"
+                        app:layout_constraintEnd_toStartOf="@+id/update_system"
+                        android:id="@+id/linearLayout4"
+                        android:layout_marginEnd="24dp"
+                        android:layout_marginBottom="16dp"
+                        android:layout_marginTop="16dp">
+
+                    <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/tong_version_text"
+                            android:textColor="?android:attr/colorAccent"
+                            android:textSize="18sp"/>
+
+                    <TextView
+                            android:id="@+id/romVersion"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="?android:attr/colorAccent"
+                            android:textSize="12sp"/>
+                </LinearLayout>
+
+                <ImageButton
+                        android:id="@+id/update_system"
+                        android:adjustViewBounds="true"
+                        android:scaleType="centerInside"
+                        android:background="@null"
+                        android:layout_width="wrap_content"
+                        android:layout_height="0dp"
+                        app:srcCompat="@drawable/baseline_arrow_forward"
+                        style="@style/Widget.AppCompat.ImageButton"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center|end"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="0dp"
+                android:layout_marginTop="15dp">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                <LinearLayout
+                        android:orientation="vertical"
+                        android:paddingStart="0dp"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        android:layout_marginStart="24dp"
+                        app:layout_constraintEnd_toStartOf="@+id/update_su"
+                        android:layout_marginEnd="24dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="16dp">
+
+                    <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/kernel_version_text"
+                            android:textColor="?android:attr/colorAccent"
+                            android:textSize="18sp"/>
+
+                    <TextView
+                            android:id="@+id/ksu_version"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="?android:attr/colorAccent"
+                            android:textSize="12sp"/>
+
+                </LinearLayout>
+
+                <ImageButton
+                        android:id="@+id/update_su"
+                        android:adjustViewBounds="true"
+                        android:scaleType="centerInside"
+                        android:background="@null"
+                        android:layout_width="wrap_content"
+                        android:layout_height="0dp"
+                        app:srcCompat="@drawable/baseline_arrow_forward"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        style="@style/Widget.AppCompat.ImageButton"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

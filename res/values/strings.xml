@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">ArbitrarilyTong Settings</string>
+
+
+    <!-- Strings used for fragments for navigation -->
+
+    <string name="tong_version_text">System Version</string>
+    <string name="summary">Code is poetry</string>
+    <string name="kernel_version_text">Kernel Version</string>
+    <string name="download_list_text">Download list</string>
+
+    <!-- About -->
+    <string name="text_check_update">Check for updates</string>
+
+    <!-- Download -->
+    <string name="download_sub_dir" translatable="false">roms</string>
+    <!-- Update -->
+    <string name="releases_info_url" translatable="false">https://ghproxy.com/https://raw.githubusercontent.com/ArbitrarilyTong-infra/ArbitrarilyTong.github.io/Update/thyme/kernel.json</string>
+    <string name="update_version">Version: %1$s</string>
+    <string name="update_date">Last update: %1$s</string>
+    <string name="update_title" translatable="false">%1$s</string>
+    <string name="update_size">Size: %1$s</string>
+    <string name="update_desc">Update infos: \n%1$s</string>
+    <string name="update_desc_none">No more infos.</string>
+    <!-- Update Menu -->
+    <string name="text_menu_copy_url">Copy url</string>
+    <string name="text_menu_update_log">Log</string>
+    <string name="text_menu_delete_update">Delete</string>
+
+    <!-- ToolBar -->
+    <string name="text_refresh">Refresh</string>
+    <string name="text_install_local">Install from local</string>
+    <string name="text_preference">Preference</string>
+</resources>
