@@ -94,6 +94,7 @@ UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList
             showPopup(mContext, viewHolder.mMenu, downloadUrl, updateLog)
         }
 
+        // 设定下载显示
         viewHolder.setDownload(mContext, downloadUrl, fileUri, filename)
     }
 
@@ -115,8 +116,6 @@ UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList
                 downloadFromUrl(
                     mContext,
                     downloadUrl,
-                    fileName,
-                    context.getString(R.string.update_download_info),
                     fileUri
                 )
                 // 启动计时器，每隔一段时间查询下载进度并更新进度条
@@ -127,14 +126,19 @@ UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList
             when (getDownloadStatusById(context, fileId)) {
                 // 如果正在下载
                 DownloadManager.STATUS_RUNNING, DownloadManager.STATUS_PENDING -> {
-                    showProgress(true)
                     // 获取下载进度
                     actionButton.text = context.getString(R.string.update_downloading)
+                    // 显示下载进度条
+                    showProgress(true)
+                    // 启动计时器，每隔一段时间查询下载进度并更新进度条
+                    checkDownload(mContext, downloadUrl, fileUri, fileName)
                 }
                 // 如果下载成功
                 DownloadManager.STATUS_SUCCESSFUL -> {
                     // 设置按钮字样为 刷入
                     actionButton.text = mContext.getString(R.string.update_flash)
+                    // 取消其他监听内容
+                    actionButton.removeCallbacks(null)
                     // 刷入当前刷机包
                     actionButton.setOnClickListener {
                         val file = fileUri.toFile()
@@ -165,12 +169,14 @@ UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList
                 (context as Activity).runOnUiThread {
                     val downloadId = setDownload(context, downloadUrl, fileUri, fileName)
                     if (downloadId != null) {
+                        showProgress(true)
                         val progress = queryDownloadProgress(context, downloadId)
 
                         mProgressBar.setProgress(progress, true)
                         mProgressBarPercent.text = mContext.getString(R.string.text_progress, progress)
                         // TODO:显示mProgressText内容
                     } else {
+                        showProgress(false)
                         timer.cancel()
                     }
                 }

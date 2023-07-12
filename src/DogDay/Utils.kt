@@ -141,8 +141,6 @@ class Utils {
         fun downloadFromUrl(
             context: Context,
             downloadUrl: String,
-            filename: String,
-            desc: String,
             path: Uri
         ): Long {
             val request: DownloadManager.Request = DownloadManager.Request(Uri.parse(downloadUrl))
@@ -150,9 +148,10 @@ class Utils {
             request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI)
             //设置通知栏标题
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            request.setTitle(filename)
-            request.setDescription(desc)
-            request.setDestinationUri(path)
+            // request.setTitle(filename)
+            // request.setDescription(desc)
+            // 设置下载目录为系统的下载目录
+            request.setDestinationInExternalPublicDir(path.toString(), null)
             val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
             return downloadManager.enqueue(request)
         }
@@ -188,10 +187,10 @@ class Utils {
             builder.show()
         }
 
-        fun openUrl(context: Context,uri:String){
-             val intent = Intent(Intent.ACTION_VIEW)
-             intent.data = Uri.parse(uri)
-             context.startActivity(intent)
+        fun openUrl(context: Context, uri: String) {
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.data = Uri.parse(uri)
+            context.startActivity(intent)
         }
 
     }
