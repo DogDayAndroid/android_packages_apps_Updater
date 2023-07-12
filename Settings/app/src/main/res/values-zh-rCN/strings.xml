@@ -22,4 +22,10 @@
     <string name="text_menu_copy_url">复制链接</string>
     <string name="text_menu_delete_update">删除刷机包</string>
     <string name="text_menu_update_log">更新日志</string>
+    <string name="update_download">下载</string>
+    <string name="update_flash">刷入</string>
+    <string name="update_pause">暂停</string>
+    <string name="update_downloading">下载中</string>
+    <string name="update_download_info">正在下载更新！</string>
+    <string name="update_resume">恢复下载</string>
 </resources>

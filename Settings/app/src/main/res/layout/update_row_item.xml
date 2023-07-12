@@ -62,14 +62,6 @@
                     android:textSize="14sp"
                     tools:text="标签: 666"/>
 
-            <TextView
-                    android:id="@+id/updateDesc"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:maxLines="1"
-                    android:textSize="14sp"
-                    tools:text="更新说明: 修复了部分错误"/>
-
             <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content">
@@ -77,12 +69,12 @@
                 <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:id="@+id/progress"
+                        android:id="@+id/update_progress_container"
                         android:visibility="invisible"
                         tools:visibility="visible">
 
                     <ProgressBar
-                            android:id="@+id/progress_bar"
+                            android:id="@+id/update_progress_bar"
                             style="@style/Widget.AppCompat.ProgressBar.Horizontal"
                             android:layout_width="0dp"
                             android:layout_weight="1"
@@ -91,7 +83,7 @@
                             tools:progress="65"/>
 
                     <TextView
-                            android:id="@+id/progress_percent"
+                            android:id="@+id/update_progress_percent"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:paddingStart="8dp"
@@ -100,10 +92,10 @@
                 </LinearLayout>
 
                 <TextView
-                        android:id="@+id/progress_text"
+                        android:id="@+id/update_progress_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_below="@id/progress"
+                        android:layout_below="@id/update_progress_container"
                         android:ellipsize="marquee"
                         android:singleLine="true"
                         android:visibility="invisible"

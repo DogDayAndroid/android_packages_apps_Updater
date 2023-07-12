@@ -1,0 +1,9 @@
+{
+    "docwriter.progress.trackClasses": true,
+    "docwriter.progress.trackTypes": true,
+    "docwriter.style": "Auto-detect",
+    "docwriter.language": "Chinese",
+    "docwriter.hotkey.mac": "⌥ + .",
+    "docwriter.progress.trackMethods": false,
+    "docwriter.progress.trackFunctions": false
+}
