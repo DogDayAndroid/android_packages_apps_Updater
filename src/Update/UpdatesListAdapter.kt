@@ -121,6 +121,10 @@ UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList
                     true
                 }
 
+                R.id.menu_delete_action -> {
+                    TODO()
+                }
+
                 else -> false
             }
         }
