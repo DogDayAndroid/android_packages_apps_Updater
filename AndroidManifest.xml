@@ -79,6 +79,12 @@
             </intent-filter>
             -->
 
+            <!-- 支持桌面启动 -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
 
             <!-- 快捷方式支持 -->
             <intent-filter>

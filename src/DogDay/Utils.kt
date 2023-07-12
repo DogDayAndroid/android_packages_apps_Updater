@@ -1,15 +1,13 @@
 package top.easterNday.settings.DogDay
 
 import android.app.AlertDialog
-import android.app.DownloadManager
-import android.app.DownloadManager.Query
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Environment
-import top.easterNday.settings.DogDay.LogUtils.logger
+import android.os.RecoverySystem
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -37,63 +35,6 @@ class Utils {
             sdf.timeZone = TimeZone.getDefault() // 将时区设置为设备的默认时区
             return sdf.format(date) // 格式化为当地时间字符串
         }
-
-        /**
-         * 函数“queryDownloadProgress”使用 Android 中的 DownloadManager 检索文件的下载进度。
-         *
-         * @param context context 参数是从中查询下载进度的应用程序或活动的上下文。它用于访问 DownloadManager 服务。
-         * @param downloadId downloadId 是下载请求的唯一标识符。当您使用 DownloadManager 对下载请求进行排队时会获得它。
-         * @return 表示下载进度的整数值。
-         */
-        fun queryDownloadProgress(context: Context, downloadId: Long): Int {
-            val query = Query()
-            query.setFilterById(downloadId)
-            val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-            var progress = 0 // 默认进度值
-            downloadManager.query(query)?.use { cursor ->
-                if (cursor.moveToFirst()) {
-                    val status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
-                    logger.d("状态:$status")
-                    if (status == DownloadManager.STATUS_RUNNING) {
-                        // 获取已下载的字节数
-                        val downloadedBytes =
-                            cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
-                        // 获取文件总字节数
-                        val totalBytes =
-                            cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
-                        // 计算下载进度
-                        progress = (downloadedBytes * 100 / totalBytes).toInt()
-                    }
-                }
-            }
-            return progress
-        }
-
-
-        /**
-         * 函数“downloadFromUrl”使用 Android DownloadManager 从给定的 URL 下载文件。
-         *
-         * @param context context 参数是应用程序的当前上下文。它通常作为启动下载的活动或片段传递。
-         * @param downloadUrl 需要下载文件的 URL。
-         * @return 函数 downloadFromUrl 返回一个 Long 值，它是在 DownloadManager 中排队的下载请求的唯一 ID。
-         */
-        fun downloadFromUrl(
-            context: Context,
-            downloadUrl: String
-        ): Long {
-            val request: DownloadManager.Request = DownloadManager.Request(Uri.parse(downloadUrl))
-            // 设置在什么网络情况下进行下载
-            request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI)
-            //设置通知栏标题
-            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            // request.setTitle(filename)
-            // request.setDescription(desc)
-            // 设置下载目录为系统的下载目录
-            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, null)
-            val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-            return downloadManager.enqueue(request)
-        }
-
 
         /**
          * 函数“copyLink2Clipboard”将给定的 URL 复制到 Kotlin 中的剪贴板。
@@ -139,60 +80,14 @@ class Utils {
             context.startActivity(intent)
         }
 
-        fun getDownloadIdByUrl(context: Context, downloadUrl: String): Long? {
-            val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-
-            val query = DownloadManager.Query()
-            query.setFilterByStatus(DownloadManager.STATUS_SUCCESSFUL) // 只查询已完成的下载任务
-
-            val cursor = downloadManager.query(query)
-            if (cursor.moveToFirst()) {
-                do {
-                    val columnIndex = cursor.getColumnIndex(DownloadManager.COLUMN_URI)
-                    val uri = cursor.getString(columnIndex)
-                    if (uri == downloadUrl) {
-                        val idIndex = cursor.getColumnIndex(DownloadManager.COLUMN_ID)
-                        val downloadId = cursor.getLong(idIndex)
-                        cursor.close()
-                        return downloadId
-                    }
-                } while (cursor.moveToNext())
+        fun Context.installPackage(update: Uri) {
+            val file = File(update.path.toString())
+            if (file.exists()) {
+                RecoverySystem.installPackage(this, file)
             }
-
-            cursor.close()
-            return null
-        }
-        fun getDownloadStatusById(context: Context, downloadId: Long): Int {
-            val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-
-            val query = DownloadManager.Query().setFilterById(downloadId)
-
-            val cursor = downloadManager.query(query)
-            if (cursor.moveToFirst()) {
-                val columnIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)
-                val status = cursor.getInt(columnIndex)
-                cursor.close()
-                return status
+            else{
+                showAlertDialog(this,"错误","没有下载对应文件或对应文件损坏!")
             }
-
-            cursor.close()
-            return DownloadManager.STATUS_FAILED
-        }
-        fun getDownloadFilePathById(context: Context, downloadId: Long): String? {
-            val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-
-            val query = DownloadManager.Query().setFilterById(downloadId)
-
-            val cursor = downloadManager.query(query)
-            if (cursor.moveToFirst()) {
-                val columnIndex = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)
-                val localUriString = cursor.getString(columnIndex)
-                cursor.close()
-                return Uri.parse(localUriString)?.path
-            }
-
-            cursor.close()
-            return null
         }
 
     }

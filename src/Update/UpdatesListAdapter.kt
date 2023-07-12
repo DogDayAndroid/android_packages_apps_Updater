@@ -2,19 +2,25 @@ package top.easterNday.settings.Update
 
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.app.DownloadManager
 import android.content.Context
+import android.net.Uri
+import android.os.Environment
+import android.text.format.Formatter
 import android.view.LayoutInflater
 import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
-import top.easterNday.settings.DogDay.DownloadStatus
-import top.easterNday.settings.DogDay.UpdateDownloadManager
 import top.easterNday.settings.DogDay.Utils.Companion.copyLink2Clipboard
+import top.easterNday.settings.DogDay.Utils.Companion.installPackage
 import top.easterNday.settings.DogDay.Utils.Companion.showAlertDialog
 import top.easterNday.settings.R
+import java.io.File
 import java.util.*
 
 
@@ -38,10 +44,6 @@ UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList
         val mProgressBar: ProgressBar
         val mProgressBarPercent: TextView
         val mProgressText: TextView
-
-        // 声明下载管理器和下载状态
-        lateinit var updateDownloadManager: UpdateDownloadManager
-        var downloadStatus: DownloadStatus = DownloadStatus.NOT_DOWNLOADED
 
         init {
             // Define click listener for the ViewHolder's View.
@@ -90,42 +92,9 @@ UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList
         }
 
         // 设定下载显示
-        viewHolder.setDownload(downloadUrl)
+        viewHolder.setDownload(downloadUrl, filename)
     }
 
-    private fun ViewHolder.setDownload(downloadUrl: String) {
-        // 初始化下载管理器
-        updateDownloadManager = UpdateDownloadManager(mContext, downloadUrl)
-
-        when (updateDownloadManager.getStatus()) {
-            DownloadStatus.NOT_DOWNLOADED -> {
-                actionButton.text = mContext.getString(R.string.update_download)
-            }
-
-            DownloadStatus.DOWNLOADING -> {
-                actionButton.text = mContext.getString(R.string.update_downloading)
-            }
-
-            DownloadStatus.PAUSED -> {
-                actionButton.text = mContext.getString(R.string.update_pause)
-            }
-
-            DownloadStatus.DOWNLOAD_COMPLETED -> {
-                actionButton.text = mContext.getString(R.string.update_flash)
-            }
-
-            else -> {
-                actionButton.text = "错误"
-            }
-        }
-    }
-
-    /**
-     * The function `addUpdateItem` adds an item to a dataset and notifies the adapter that an item has
-     * been inserted.
-     *
-     * @param item The item to be added or updated in the dataset.
-     */
     fun addUpdateItem(item: UpdateItem) {
         // 异步添加item的逻辑
         dataSet.add(item)
@@ -133,19 +102,6 @@ UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList
         notifyItemInserted(dataSet.size - 1) // 获取新添加item的位置
     }
 
-    /**
-     * The function `showPopup` displays a popup menu with options to copy a URL to the clipboard and show
-     * an update log.
-     *
-     * @param mContext The `Context` object, which represents the current state of the application or activity.
-     * @param v The `View` parameter `v` represents the view that the popup menu should be anchored to.
-     * This is typically the view that triggered the popup menu to be shown, such as a button or an image.
-     * @param url The URL that will be copied to the clipboard when the "Copy URL" option is selected from
-     * the popup menu.
-     * @param log The `log` parameter is a string that represents the update log or changelog for a
-     * particular item. It is used to display the update log when the corresponding menu option is
-     * selected.
-     */
     private fun ViewHolder.showPopup(url: String, log: String) {
         val popup = PopupMenu(mContext, mMenu)
         val inflater: MenuInflater = popup.menuInflater
@@ -180,5 +136,142 @@ UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList
         mProgressBar.visibility = visibility
         mProgressBarPercent.visibility = visibility
         mProgressText.visibility = visibility
+    }
+
+    private fun ViewHolder.onActionButtonClick(action: () -> Unit) {
+        actionButton.setOnClickListener(null)
+        actionButton.setOnClickListener {
+            action.invoke()
+        }
+    }
+
+    private fun ViewHolder.setDownload(downloadUrl: String, filename: String) {
+
+        fun getDownloadUri(): Uri {
+            val romsDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "Roms")
+            if (!romsDir.exists()) {
+                romsDir.mkdirs()
+            }
+            val update = File(romsDir.path, filename)
+            return update.toUri()
+        }
+
+        val downloadManager = mContext.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        val downloadRequest = DownloadManager.Request(Uri.parse(downloadUrl))
+        // 设置在什么网络情况下进行下载
+        downloadRequest.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI)
+        //设置通知栏标题
+        downloadRequest.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+        // request.setTitle(filename)
+        // request.setDescription(desc)
+        // 设置下载目录为系统的下载目录
+        //downloadRequest.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename)
+        downloadRequest.setDestinationUri(getDownloadUri())
+
+        var downloadId: Long = -1 // 用于保存下载任务的ID
+
+
+        // 更新下载按钮的文本
+        fun updateActionButtonText(text: String) {
+            actionButton.text = text
+        }
+
+        // 更新按钮点击事件
+        fun updateActionButtonClick(action: () -> Unit) {
+            actionButton.setOnClickListener(null)
+            actionButton.setOnClickListener {
+                action.invoke()
+            }
+        }
+
+        // 暂停下载任务
+        fun pauseDownload() {
+            downloadManager.remove(downloadId)
+            updateActionButtonText(mContext.getString(R.string.update_download))
+        }
+
+
+        // 开始下载任务
+        fun startDownload() {
+            downloadId = downloadManager.enqueue(downloadRequest)
+            updateActionButtonText(mContext.getString(R.string.update_downloading))
+        }
+
+        // 查询下载任务的状态和进度
+        fun queryDownloadStatus() {
+            val query = DownloadManager.Query()
+            query.setFilterById(downloadId)
+
+            val cursor = downloadManager.query(query)
+            if (cursor.moveToFirst()) {
+                val status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
+                val progress =
+                    cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
+                val total = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
+
+                when (status) {
+                    DownloadManager.STATUS_RUNNING, DownloadManager.STATUS_PENDING -> {
+                        showProgress(true)
+                        val percent = progress * 100 / total
+                        mProgressBar.progress = percent
+                        mProgressBarPercent.text = mContext.getString(R.string.text_progress, percent)
+                        mProgressText.text = mContext.getString(
+                            R.string.text_progress_total,
+                            Formatter.formatFileSize(mContext, progress.toLong()),
+                            Formatter.formatFileSize(mContext, total.toLong())
+                        )
+
+                        // 下载暂停，显示继续按钮
+                        updateActionButtonText(mContext.getString(R.string.update_pause))
+                        updateActionButtonClick {
+                            pauseDownload()
+                        }
+                    }
+
+                    DownloadManager.STATUS_PAUSED -> {
+                        // 下载暂停，显示继续按钮
+                        updateActionButtonText(mContext.getString(R.string.update_resume))
+                        updateActionButtonClick {
+                            startDownload()
+                        }
+                    }
+
+                    DownloadManager.STATUS_SUCCESSFUL -> {
+                        // 下载完成，显示安装按钮或其他操作
+                        showProgress(false)
+                        updateActionButtonText(mContext.getString(R.string.update_flash))
+                        updateActionButtonClick {
+                            mContext.installPackage(getDownloadUri())
+                        }
+                    }
+
+                    DownloadManager.STATUS_FAILED -> {
+                        // 下载失败，显示重新下载按钮
+                        updateActionButtonText(mContext.getString(R.string.update_download))
+                        updateActionButtonClick {
+                            startDownload()
+                        }
+                    }
+                }
+            } else {
+                updateActionButtonText(mContext.getString(R.string.update_download))
+                updateActionButtonClick {
+                    startDownload()
+                }
+            }
+
+            cursor.close()
+        }
+
+        // 定时查询下载状态
+        val timer = Timer()
+        val timerTask = object : TimerTask() {
+            override fun run() {
+                (mContext as Activity).runOnUiThread {
+                    queryDownloadStatus()
+                }
+            }
+        }
+        timer.schedule(timerTask, 0, 1000) // 每隔1秒查询一次下载状态
     }
 }
