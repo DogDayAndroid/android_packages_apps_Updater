@@ -2,9 +2,7 @@ package top.easterNday.settings.Update
 
 
 import android.annotation.SuppressLint
-import android.app.DownloadManager
 import android.content.Context
-import android.os.RecoverySystem
 import android.view.LayoutInflater
 import android.view.MenuInflater
 import android.view.View
@@ -12,15 +10,11 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
-import top.easterNday.settings.DogDay.LogUtils.logger
+import top.easterNday.settings.DogDay.DownloadStatus
+import top.easterNday.settings.DogDay.UpdateDownloadManager
 import top.easterNday.settings.DogDay.Utils.Companion.copyLink2Clipboard
-import top.easterNday.settings.DogDay.Utils.Companion.downloadFromUrl
-import top.easterNday.settings.DogDay.Utils.Companion.getDownloadFilePathById
-import top.easterNday.settings.DogDay.Utils.Companion.getDownloadIdByUrl
-import top.easterNday.settings.DogDay.Utils.Companion.getDownloadStatusById
 import top.easterNday.settings.DogDay.Utils.Companion.showAlertDialog
 import top.easterNday.settings.R
-import java.io.File
 import java.util.*
 
 
@@ -44,6 +38,10 @@ UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList
         val mProgressBar: ProgressBar
         val mProgressBarPercent: TextView
         val mProgressText: TextView
+
+        // 声明下载管理器和下载状态
+        lateinit var updateDownloadManager: UpdateDownloadManager
+        var downloadStatus: DownloadStatus = DownloadStatus.NOT_DOWNLOADED
 
         init {
             // Define click listener for the ViewHolder's View.
@@ -92,65 +90,34 @@ UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList
         }
 
         // 设定下载显示
-        viewHolder.setDownload(mContext, downloadUrl)
+        viewHolder.setDownload(downloadUrl)
     }
 
-    private fun ViewHolder.setDownload(
-        context: Context,
-        downloadUrl: String
-    ): Long? {
-        val fileId: Long? = getDownloadIdByUrl(mContext, downloadUrl)
-        if (fileId == null) {
-            // 设置按钮字样为 下载
-            actionButton.text = mContext.getString(R.string.update_download)
-            // 取消其他监听内容
-            actionButton.removeCallbacks(null)
-            // 点击下载按钮开始下载
-            actionButton.setOnClickListener {
-                // 调用系统服务进行下载
-                downloadFromUrl(
-                    mContext,
-                    downloadUrl
-                )
-                // 启动计时器，每隔一段时间查询下载进度并更新进度条
-                // checkDownload(mContext, downloadUrl, fileUri, fileName)
+    private fun ViewHolder.setDownload(downloadUrl: String) {
+        // 初始化下载管理器
+        updateDownloadManager = UpdateDownloadManager(mContext, downloadUrl)
+
+        when (updateDownloadManager.getStatus()) {
+            DownloadStatus.NOT_DOWNLOADED -> {
+                actionButton.text = mContext.getString(R.string.update_download)
             }
-        } else {
-            // 判断下载状态
-            when (getDownloadStatusById(context, fileId)) {
-                // 如果正在下载
-                DownloadManager.STATUS_RUNNING, DownloadManager.STATUS_PENDING -> {
-                    // 获取下载进度
-                    actionButton.text = context.getString(R.string.update_downloading)
-                    // 显示下载进度条
-                    showProgress(true)
-                    // 启动计时器，每隔一段时间查询下载进度并更新进度条
-                    // checkDownload(mContext, downloadUrl, fileUri, fileName)
-                }
-                // 如果下载成功
-                DownloadManager.STATUS_SUCCESSFUL -> {
-                    // 设置按钮字样为 刷入
-                    actionButton.text = mContext.getString(R.string.update_flash)
-                    // 取消其他监听内容
-                    actionButton.removeCallbacks(null)
-                    // 刷入当前刷机包
-                    actionButton.setOnClickListener {
-                        val filePath = getDownloadFilePathById(mContext, fileId)
-                        if (filePath != null) {
-                            logger.d("Install %s", filePath)
-                            val file = File(filePath)
-                            RecoverySystem.installPackage(mContext, file)
-                        }
-                    }
-                }
-                // 如果下载暂停
-                DownloadManager.STATUS_PAUSED -> {
-                    // 设置按钮字样为 暂停
-                    actionButton.text = mContext.getString(R.string.update_pause)
-                }
+
+            DownloadStatus.DOWNLOADING -> {
+                actionButton.text = mContext.getString(R.string.update_downloading)
+            }
+
+            DownloadStatus.PAUSED -> {
+                actionButton.text = mContext.getString(R.string.update_pause)
+            }
+
+            DownloadStatus.DOWNLOAD_COMPLETED -> {
+                actionButton.text = mContext.getString(R.string.update_flash)
+            }
+
+            else -> {
+                actionButton.text = "错误"
             }
         }
-        return fileId
     }
 
     /**

@@ -1,22 +1,25 @@
 package top.easterNday.settings.DogDay
 
 import android.content.Context
+import android.os.Environment
 import okhttp3.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
-class DownloadManager(private val context: Context, private val downloadUrl: String) {
+class UpdateDownloadManager(private val context: Context, private val downloadUrl: String) {
     private val client: OkHttpClient = OkHttpClient()
+
     private var downloadPath: String = ""
+
     private var downloadedBytes: Long = 0
     private var totalBytes: Long = 0
-    private var isPaused: Boolean = false
-    private var isDownloadCompleted: Boolean = false
+
+    private var status: DownloadStatus = DownloadStatus.NOT_DOWNLOADED
 
     init {
         // 设置下载路径为Download文件夹下的Rom文件夹
-        val downloadDir = File(context.getExternalFilesDir(null), "Rom")
+        val downloadDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "Roms")
         downloadDir.mkdirs()
         downloadPath = File(downloadDir, getFileName(downloadUrl)).absolutePath
 
@@ -25,11 +28,18 @@ class DownloadManager(private val context: Context, private val downloadUrl: Str
         if (savedDownloadInfo != null) {
             downloadedBytes = savedDownloadInfo.first
             totalBytes = savedDownloadInfo.second
+            if (downloadedBytes == totalBytes) {
+                status = DownloadStatus.DOWNLOAD_COMPLETED
+            }
         }
     }
 
     fun startDownload() {
-        isPaused = false
+        if (status == DownloadStatus.DOWNLOADING || status == DownloadStatus.PAUSED) {
+            return
+        }
+
+        status = DownloadStatus.DOWNLOADING
 
         val requestBuilder = Request.Builder()
             .url(downloadUrl)
@@ -64,7 +74,7 @@ class DownloadManager(private val context: Context, private val downloadUrl: Str
                     var bytesRead: Int
 
                     while (responseBody.byteStream().read(buffer).also { bytesRead = it } != -1) {
-                        if (isPaused) {
+                        if (status == DownloadStatus.PAUSED) {
                             // 下载被暂停，中断下载逻辑
                             break
                         }
@@ -82,23 +92,27 @@ class DownloadManager(private val context: Context, private val downloadUrl: Str
 
                     // 下载完成处理逻辑
                     if (downloadedBytes == totalBytes) {
-                        isDownloadCompleted = true
+                        status = DownloadStatus.DOWNLOAD_COMPLETED
                         clearDownloadInfo()
                     } else {
                         // 保存已下载的字节数和总字节数
                         saveDownloadInfo(downloadedBytes, totalBytes)
                     }
+
+                    status = DownloadStatus.NOT_DOWNLOADED
                 }
             }
         })
     }
 
     fun pauseDownload() {
-        isPaused = true
+        if (status == DownloadStatus.DOWNLOADING) {
+            status = DownloadStatus.PAUSED
+        }
     }
 
-    fun isCompleted(): Boolean {
-        return isDownloadCompleted
+    fun getStatus(): DownloadStatus {
+        return status
     }
 
     private fun getFileName(url: String): String {
@@ -169,4 +183,11 @@ class DownloadManager(private val context: Context, private val downloadUrl: Str
     fun setOnProgressListener(listener: OnProgressListener) {
         onProgressListener = listener
     }
+}
+
+enum class DownloadStatus {
+    NOT_DOWNLOADED,
+    DOWNLOAD_COMPLETED,
+    PAUSED,
+    DOWNLOADING
 }
