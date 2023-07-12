@@ -24,28 +24,25 @@ public final class UpdateRowItemBinding implements ViewBinding {
   private final CardView rootView;
 
   @NonNull
-  public final LinearLayout progress;
-
-  @NonNull
-  public final ProgressBar progressBar;
-
-  @NonNull
-  public final TextView progressPercent;
-
-  @NonNull
-  public final TextView progressText;
-
-  @NonNull
   public final Button updateAction;
 
   @NonNull
   public final TextView updateDate;
 
   @NonNull
-  public final TextView updateDesc;
+  public final ImageButton updateMenu;
 
   @NonNull
-  public final ImageButton updateMenu;
+  public final ProgressBar updateProgressBar;
+
+  @NonNull
+  public final LinearLayout updateProgressContainer;
+
+  @NonNull
+  public final TextView updateProgressPercent;
+
+  @NonNull
+  public final TextView updateProgressText;
 
   @NonNull
   public final TextView updateSize;
@@ -59,20 +56,20 @@ public final class UpdateRowItemBinding implements ViewBinding {
   @NonNull
   public final TextView updateVersion;
 
-  private UpdateRowItemBinding(@NonNull CardView rootView, @NonNull LinearLayout progress,
-      @NonNull ProgressBar progressBar, @NonNull TextView progressPercent,
-      @NonNull TextView progressText, @NonNull Button updateAction, @NonNull TextView updateDate,
-      @NonNull TextView updateDesc, @NonNull ImageButton updateMenu, @NonNull TextView updateSize,
-      @NonNull TextView updateTag, @NonNull TextView updateTitle, @NonNull TextView updateVersion) {
+  private UpdateRowItemBinding(@NonNull CardView rootView, @NonNull Button updateAction,
+      @NonNull TextView updateDate, @NonNull ImageButton updateMenu,
+      @NonNull ProgressBar updateProgressBar, @NonNull LinearLayout updateProgressContainer,
+      @NonNull TextView updateProgressPercent, @NonNull TextView updateProgressText,
+      @NonNull TextView updateSize, @NonNull TextView updateTag, @NonNull TextView updateTitle,
+      @NonNull TextView updateVersion) {
     this.rootView = rootView;
-    this.progress = progress;
-    this.progressBar = progressBar;
-    this.progressPercent = progressPercent;
-    this.progressText = progressText;
     this.updateAction = updateAction;
     this.updateDate = updateDate;
-    this.updateDesc = updateDesc;
     this.updateMenu = updateMenu;
+    this.updateProgressBar = updateProgressBar;
+    this.updateProgressContainer = updateProgressContainer;
+    this.updateProgressPercent = updateProgressPercent;
+    this.updateProgressText = updateProgressText;
     this.updateSize = updateSize;
     this.updateTag = updateTag;
     this.updateTitle = updateTitle;
@@ -106,30 +103,6 @@ public final class UpdateRowItemBinding implements ViewBinding {
     // This is done to optimize the compiled bytecode for size and performance.
     int id;
     missingId: {
-      id = R.id.progress;
-      LinearLayout progress = ViewBindings.findChildViewById(rootView, id);
-      if (progress == null) {
-        break missingId;
-      }
-
-      id = R.id.progress_bar;
-      ProgressBar progressBar = ViewBindings.findChildViewById(rootView, id);
-      if (progressBar == null) {
-        break missingId;
-      }
-
-      id = R.id.progress_percent;
-      TextView progressPercent = ViewBindings.findChildViewById(rootView, id);
-      if (progressPercent == null) {
-        break missingId;
-      }
-
-      id = R.id.progress_text;
-      TextView progressText = ViewBindings.findChildViewById(rootView, id);
-      if (progressText == null) {
-        break missingId;
-      }
-
       id = R.id.updateAction;
       Button updateAction = ViewBindings.findChildViewById(rootView, id);
       if (updateAction == null) {
@@ -142,15 +115,33 @@ public final class UpdateRowItemBinding implements ViewBinding {
         break missingId;
       }
 
-      id = R.id.updateDesc;
-      TextView updateDesc = ViewBindings.findChildViewById(rootView, id);
-      if (updateDesc == null) {
-        break missingId;
-      }
-
       id = R.id.updateMenu;
       ImageButton updateMenu = ViewBindings.findChildViewById(rootView, id);
       if (updateMenu == null) {
+        break missingId;
+      }
+
+      id = R.id.update_progress_bar;
+      ProgressBar updateProgressBar = ViewBindings.findChildViewById(rootView, id);
+      if (updateProgressBar == null) {
+        break missingId;
+      }
+
+      id = R.id.update_progress_container;
+      LinearLayout updateProgressContainer = ViewBindings.findChildViewById(rootView, id);
+      if (updateProgressContainer == null) {
+        break missingId;
+      }
+
+      id = R.id.update_progress_percent;
+      TextView updateProgressPercent = ViewBindings.findChildViewById(rootView, id);
+      if (updateProgressPercent == null) {
+        break missingId;
+      }
+
+      id = R.id.update_progress_text;
+      TextView updateProgressText = ViewBindings.findChildViewById(rootView, id);
+      if (updateProgressText == null) {
         break missingId;
       }
 
@@ -178,9 +169,9 @@ public final class UpdateRowItemBinding implements ViewBinding {
         break missingId;
       }
 
-      return new UpdateRowItemBinding((CardView) rootView, progress, progressBar, progressPercent,
-          progressText, updateAction, updateDate, updateDesc, updateMenu, updateSize, updateTag,
-          updateTitle, updateVersion);
+      return new UpdateRowItemBinding((CardView) rootView, updateAction, updateDate, updateMenu,
+          updateProgressBar, updateProgressContainer, updateProgressPercent, updateProgressText,
+          updateSize, updateTag, updateTitle, updateVersion);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

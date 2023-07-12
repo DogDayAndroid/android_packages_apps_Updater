@@ -1,32 +1,17 @@
 package top.easterNday.settings.Update
 
 
-/*
- * Copyright (C) 2017-2023 The LineageOS Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.app.DownloadManager
 import android.content.Context
+import android.net.Uri
 import android.os.RecoverySystem
 import android.view.LayoutInflater
 import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageButton
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.net.toFile
 import androidx.recyclerview.widget.RecyclerView
@@ -34,12 +19,16 @@ import top.easterNday.settings.DogDay.LogUtils.logger
 import top.easterNday.settings.DogDay.Utils.Companion.copyLink2Clipboard
 import top.easterNday.settings.DogDay.Utils.Companion.downloadFromUrl
 import top.easterNday.settings.DogDay.Utils.Companion.genDownloadPath
-import top.easterNday.settings.DogDay.Utils.Companion.isFileDownloadedAndAvailable
+import top.easterNday.settings.DogDay.Utils.Companion.getDownloadIdByUrl
+import top.easterNday.settings.DogDay.Utils.Companion.getDownloadStatusById
+import top.easterNday.settings.DogDay.Utils.Companion.queryDownloadProgress
 import top.easterNday.settings.DogDay.Utils.Companion.showAlertDialog
 import top.easterNday.settings.R
+import java.util.*
 
 
-class UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList<UpdateItem>) :
+class
+UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList<UpdateItem>) :
     RecyclerView.Adapter<UpdatesListAdapter.ViewHolder>() {
     /**
      * Provide a reference to the type of views that you are using
@@ -51,9 +40,12 @@ class UpdatesListAdapter(private val mContext: Context, private val dataSet: Arr
         val datetime: TextView
         val size: TextView
         val tag: TextView
-        val desc: TextView
         val actionButton: Button
         val mMenu: ImageButton
+        val mProgress: LinearLayout
+        val mProgressBar: ProgressBar
+        val mProgressBarPercent: TextView
+        val mProgressText: TextView
 
         init {
             // Define click listener for the ViewHolder's View.
@@ -62,10 +54,14 @@ class UpdatesListAdapter(private val mContext: Context, private val dataSet: Arr
             datetime = view.findViewById(R.id.updateDate)
             size = view.findViewById(R.id.updateSize)
             tag = view.findViewById(R.id.updateTag)
-            desc = view.findViewById(R.id.updateDesc)
             actionButton = view.findViewById(R.id.updateAction)
             // Action Button
             mMenu = view.findViewById(R.id.updateMenu)
+            // ProcessBar
+            mProgress = view.findViewById(R.id.update_progress_container)
+            mProgressBar = view.findViewById(R.id.update_progress_bar)
+            mProgressBarPercent = view.findViewById(R.id.update_progress_percent)
+            mProgressText = view.findViewById(R.id.update_progress_text)
         }
     }
 
@@ -80,14 +76,10 @@ class UpdatesListAdapter(private val mContext: Context, private val dataSet: Arr
     // Return the size of your dataset (invoked by the layout manager)
     override fun getItemCount() = dataSet.size
 
-    // Replace the contents of a view (invoked by the layout manager)
     @SuppressLint("RestrictedApi")
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
-
-        // Get element from your dataset at this position and replace the
-        // contents of the view with that element
-        val download_url = dataSet[position].updateUrl
-        val update_log = dataSet[position].updateDesc
+        val downloadUrl = dataSet[position].updateUrl
+        val updateLog = dataSet[position].updateDesc
         val filename = dataSet[position].updateTitle
         val fileUri = genDownloadPath(mContext.getString(R.string.download_sub_dir), filename)
 
@@ -95,41 +87,103 @@ class UpdatesListAdapter(private val mContext: Context, private val dataSet: Arr
         viewHolder.version.text = dataSet[position].updateVersion
         viewHolder.datetime.text = dataSet[position].updateDate
         viewHolder.size.text = dataSet[position].updateSize
-        viewHolder.desc.text = update_log
         viewHolder.tag.text = dataSet[position].updateTag
 
-
+        // 绑定 Popup 菜单功能
         viewHolder.mMenu.setOnClickListener {
-            logger.d("PopUp！")
-            showPopup(mContext, viewHolder.mMenu, download_url, update_log)
+            showPopup(mContext, viewHolder.mMenu, downloadUrl, updateLog)
         }
 
-        if (isFileDownloadedAndAvailable(mContext, download_url, fileUri)) {
-            viewHolder.actionButton.text = "刷入"
+        viewHolder.setDownload(mContext, downloadUrl, fileUri, filename)
+    }
 
-
-            viewHolder.actionButton.setOnClickListener {
-                val file = fileUri.toFile()
-                logger.d("Install %s", file.toString())
-                RecoverySystem.installPackage(mContext, file)
-            }
-        } else {
-            viewHolder.actionButton.text = "下载"
+    private fun ViewHolder.setDownload(
+        context: Context,
+        downloadUrl: String,
+        fileUri: Uri,
+        fileName: String
+    ): Long? {
+        val fileId: Long? = getDownloadIdByUrl(mContext, downloadUrl, fileUri)
+        if (fileId == null) {
+            // 设置按钮字样为 下载
+            actionButton.text = mContext.getString(R.string.update_download)
+            // 取消其他监听内容
+            actionButton.removeCallbacks(null)
             // 点击下载按钮开始下载
-            viewHolder.actionButton.setOnClickListener {
+            actionButton.setOnClickListener {
                 // 调用系统服务进行下载
                 downloadFromUrl(
                     mContext,
-                    download_url,
-                    filename,
-                    dataSet[position].updateDesc,
+                    downloadUrl,
+                    fileName,
+                    context.getString(R.string.update_download_info),
                     fileUri
                 )
+                // 启动计时器，每隔一段时间查询下载进度并更新进度条
+                checkDownload(mContext, downloadUrl, fileUri, fileName)
+            }
+        } else {
+            // 判断下载状态
+            when (getDownloadStatusById(context, fileId)) {
+                // 如果正在下载
+                DownloadManager.STATUS_RUNNING, DownloadManager.STATUS_PENDING -> {
+                    showProgress(true)
+                    // 获取下载进度
+                    actionButton.text = context.getString(R.string.update_downloading)
+                }
+                // 如果下载成功
+                DownloadManager.STATUS_SUCCESSFUL -> {
+                    // 设置按钮字样为 刷入
+                    actionButton.text = mContext.getString(R.string.update_flash)
+                    // 刷入当前刷机包
+                    actionButton.setOnClickListener {
+                        val file = fileUri.toFile()
+                        logger.d("Install %s", file.toString())
+                        RecoverySystem.installPackage(mContext, file)
+                    }
+                }
+                // 如果下载暂停
+                DownloadManager.STATUS_PAUSED -> {
+                    // 设置按钮字样为 暂停
+                    actionButton.text = mContext.getString(R.string.update_pause)
+                }
             }
         }
-
+        return fileId
     }
 
+    // 检查下载进度，更新进度条
+    private fun ViewHolder.checkDownload(
+        context: Context,
+        downloadUrl: String,
+        fileUri: Uri,
+        fileName: String
+    ) {
+        val timer = Timer()
+        timer.scheduleAtFixedRate(object : TimerTask() {
+            override fun run() {
+                (context as Activity).runOnUiThread {
+                    val downloadId = setDownload(context, downloadUrl, fileUri, fileName)
+                    if (downloadId != null) {
+                        val progress = queryDownloadProgress(context, downloadId)
+
+                        mProgressBar.setProgress(progress, true)
+                        mProgressBarPercent.text = mContext.getString(R.string.text_progress, progress)
+                        // TODO:显示mProgressText内容
+                    } else {
+                        timer.cancel()
+                    }
+                }
+            }
+        }, 0, 1000) // 每隔1秒查询一次下载进度，你可以根据需要调整时间间隔
+    }
+
+    /**
+     * The function `addUpdateItem` adds an item to a dataset and notifies the adapter that an item has
+     * been inserted.
+     *
+     * @param item The item to be added or updated in the dataset.
+     */
     fun addUpdateItem(item: UpdateItem) {
         // 异步添加item的逻辑
         dataSet.add(item)
@@ -137,6 +191,19 @@ class UpdatesListAdapter(private val mContext: Context, private val dataSet: Arr
         notifyItemInserted(dataSet.size - 1) // 获取新添加item的位置
     }
 
+    /**
+     * The function `showPopup` displays a popup menu with options to copy a URL to the clipboard and show
+     * an update log.
+     *
+     * @param c The `Context` object, which represents the current state of the application or activity.
+     * @param v The `View` parameter `v` represents the view that the popup menu should be anchored to.
+     * This is typically the view that triggered the popup menu to be shown, such as a button or an image.
+     * @param url The URL that will be copied to the clipboard when the "Copy URL" option is selected from
+     * the popup menu.
+     * @param log The `log` parameter is a string that represents the update log or changelog for a
+     * particular item. It is used to display the update log when the corresponding menu option is
+     * selected.
+     */
     private fun showPopup(c: Context, v: View, url: String, log: String) {
         val popup = PopupMenu(c, v)
         val inflater: MenuInflater = popup.menuInflater
@@ -148,10 +215,6 @@ class UpdatesListAdapter(private val mContext: Context, private val dataSet: Arr
                 R.id.menu_copy_url -> {
                     // 复制内容到剪贴板
                     copyLink2Clipboard(c, url)
-                    // 打开网页
-                    // val intent = Intent(Intent.ACTION_VIEW)
-                    // intent.data = Uri.parse(dataSet[position].updateUrl)
-                    // viewHolder.itemView.context.startActivity(intent)
                     true
                 }
 
@@ -164,5 +227,16 @@ class UpdatesListAdapter(private val mContext: Context, private val dataSet: Arr
             }
         }
         popup.show()
+    }
+
+    // 控制进度部分和大小部分的显示
+    private fun ViewHolder.showProgress(flag: Boolean) {
+        val visibility = if (flag) View.VISIBLE else View.INVISIBLE
+
+        size.visibility = if (flag) View.INVISIBLE else View.VISIBLE
+        mProgress.visibility = visibility
+        mProgressBar.visibility = visibility
+        mProgressBarPercent.visibility = visibility
+        mProgressText.visibility = visibility
     }
 }

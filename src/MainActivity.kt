@@ -18,6 +18,14 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var appBarConfiguration: AppBarConfiguration
 
+    /**
+     * This function sets up the main activity layout and navigation, including the app bar, collapsing
+     * toolbar, and back button functionality.
+     *
+     * @param savedInstanceState The `savedInstanceState` parameter is a `Bundle` object that contains the
+     * data that was saved in the `onSaveInstanceState()` method. This bundle can be used to restore the
+     * activity's state when it is recreated.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
@@ -57,14 +65,26 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    // 菜单创建
+    /**
+     * The function is used to create the options menu for the activity.
+     *
+     * @param menu The `menu` parameter is an instance of the `Menu` class. It represents the menu that
+     * will be displayed in the action bar.
+     * @return The method `onCreateOptionsMenu` is returning a boolean value. In this case, it is returning
+     * `true`.
+     */
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_about, menu)
         return true
     }
 
-    // Navigation back
+    /**
+     * This function handles the navigation up action in a Kotlin Android application, including checking
+     * if the current destination is a top-level destination and finishing the activity if it is.
+     *
+     * @return The method is returning a boolean value.
+     */
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
 

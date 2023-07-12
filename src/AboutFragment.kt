@@ -14,9 +14,6 @@ import top.easterNday.settings.databinding.FragmentAboutBinding
 class AboutFragment : Fragment() {
 
     private var _binding: FragmentAboutBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -30,15 +27,30 @@ class AboutFragment : Fragment() {
     }
 
 
+    /**
+     * This function sets up the view and handles button clicks for updating the system and kernel
+     * versions.
+     *
+     * @param view The view parameter is the root view of the fragment. It represents the layout file
+     * associated with the fragment and contains all the UI elements defined in that layout file.
+     * @param savedInstanceState The `savedInstanceState` parameter is a `Bundle` object that contains the
+     * saved state of the fragment. It is used to restore the previous state of the fragment when it is
+     * recreated.
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 获取系统版本
+        /* This line of code is finding the TextView with the id "romVersion" in the current view and setting
+        its text to the value of the system property "ro.lineage.version". The value is converted to a
+        string using the `toString()` method. */
         view.findViewById<TextView>(R.id.romVersion).text = SystemProperties.get("ro.lineage.version").toString()
-        // 获取内核版本
+
+        /* The code `val uname = Os.uname()` is calling the `uname()` function from the `Os` class. This
+        function returns a structure containing information about the current operating system. */
         val uname = Os.uname()
         view.findViewById<TextView>(R.id.ksu_version).text = uname.release
-        // 系统指纹 Build.FINGERPRINT
+
+        // TODO: Build.FINGERPRINT
 
         binding.updateSystem.setOnClickListener {
             // 数据传递

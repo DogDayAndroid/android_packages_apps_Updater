@@ -18,9 +18,6 @@ import java.io.IOException
 class UpdateFragment : Fragment() {
 
     private var _binding: FragmentUpdateBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -32,29 +29,37 @@ class UpdateFragment : Fragment() {
         return binding.root
     }
 
+    /**
+     * This function sets up a RecyclerView with a custom adapter and populates it with data fetched from a
+     * remote server.
+     *
+     * @param view The root view of the fragment or activity.
+     * @param savedInstanceState The `savedInstanceState` parameter is a Bundle object that contains the
+     * data that was saved in the `onSaveInstanceState()` method. It can be used to restore the state of
+     * the fragment when it is recreated.
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // this creates a vertical layout Manager
+        /* The code is setting up a RecyclerView with a custom adapter and populating it with data fetched from
+        a remote server. */
         binding.downloadListView.layoutManager = LinearLayoutManager(binding.root.context)
-        // 设置数据
         val dataArray = ArrayList<UpdateItem>()
-        // 设置适配器（第一个参数：上下文；第二个参数：listview的每一个item的布局文件，这里使用系统提供的；第三个参数：数据源）
         val adapter = UpdatesListAdapter(requireContext(), dataArray)
         binding.downloadListView.adapter = adapter
 
+        /* The code block is making an asynchronous HTTP GET request to a remote server using the OkHttp
+        library. */
         val okHttpClient = OkHttpClient()
         val request: Request = Request.Builder()
             .url(requireContext().getString(R.string.releases_info_url))
-            .get() //默认就是GET请求，可以不写
+            .get()
             .build()
         val call: Call = okHttpClient.newCall(request)
-
         call.enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 LogUtils.logger.e(e.message)
             }
-
             override fun onResponse(call: Call, response: Response) {
                 LogUtils.logger.d(response.body.toString())
                 val data = JSONArray(response.body.string())

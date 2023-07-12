@@ -1,15 +1,16 @@
 package top.easterNday.settings.DogDay
 
-import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.DownloadManager
 import android.app.DownloadManager.Query
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import androidx.core.net.toFile
+import top.easterNday.settings.DogDay.LogUtils.logger
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -50,23 +51,82 @@ class Utils {
             return Uri.fromFile(destinationFile)
         }
 
-        @SuppressLint("Range")
-        fun isFileDownloadedAndAvailable(context: Context, url: String, path: Uri): Boolean {
+        /**
+         * 判断文件是否被下载过，如果下载过是否还存在于本地中
+         * 如果都满足则返回 true
+         * 反之会返回 false
+         *
+         * @param context 上下文
+         * @param url 下载地址，用于判断是否下载过
+         * @param path 文件存储位置，用于判断文件是否存在
+         * @return 文件是否被下载过且存在于本地
+         */
+        fun getDownloadIdByUrl(context: Context, url: String, path: Uri): Long? {
+            val file = path.toFile()
+            if (!file.exists()) {
+                return null
+            }
+
             val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-            val query = Query()
-            query.setFilterByStatus(DownloadManager.STATUS_SUCCESSFUL)
+
+            val query = DownloadManager.Query()
+            val cursor = downloadManager.query(query)
+            val downloadIdIndex = cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_ID)
+            cursor.use {
+                while (cursor.moveToNext()) {
+                    val downloadedUrl = cursor.getString(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_URI))
+                    if (downloadedUrl == url) {
+                        return cursor.getLong(downloadIdIndex)
+                    }
+                }
+            }
+
+            return null
+        }
+
+        fun getDownloadStatusById(context: Context, downloadId: Long): Int? {
+            val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+
+            val query = Query().apply {
+                setFilterById(downloadId)
+            }
+
             val cursor = downloadManager.query(query)
             if (cursor.moveToFirst()) {
-                do {
-                    val downloadedUrl = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_URI))
-                    if (downloadedUrl == url) {
-                        val file = path.toFile()
-                        return file.exists() // 文件存在，表示已下载且未被删除
-                    }
-                } while (cursor.moveToNext())
+                val status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
+                cursor.close()
+                return status
             }
-            return false // 文件未下载或已被删除
+
+            cursor.close()
+            return null
         }
+
+        // 查询下载进度的方法
+        fun queryDownloadProgress(context: Context, downloadId: Long): Int {
+            val query = Query()
+            query.setFilterById(downloadId)
+            val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+            var progress = 0 // 默认进度值
+            downloadManager.query(query)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
+                    logger.d("状态:$status")
+                    if (status == DownloadManager.STATUS_RUNNING) {
+                        // 获取已下载的字节数
+                        val downloadedBytes =
+                            cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
+                        // 获取文件总字节数
+                        val totalBytes =
+                            cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
+                        // 计算下载进度
+                        progress = (downloadedBytes * 100 / totalBytes).toInt()
+                    }
+                }
+            }
+            return progress
+        }
+
 
         /**
          * The function `downloadFromUrl` downloads a file from a given URL and saves it to the specified directory on the device.
@@ -126,6 +186,12 @@ class Utils {
             builder.setMessage(content)
             builder.setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
             builder.show()
+        }
+
+        fun openUrl(context: Context,uri:String){
+             val intent = Intent(Intent.ACTION_VIEW)
+             intent.data = Uri.parse(uri)
+             context.startActivity(intent)
         }
 
     }

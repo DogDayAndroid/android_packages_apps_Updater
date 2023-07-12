@@ -22,10 +22,17 @@
     <string name="update_size">Size: %1$s</string>
     <string name="update_desc">Update infos: \n%1$s</string>
     <string name="update_desc_none">No more infos.</string>
+    <string name="update_download">Download</string>
+    <string name="update_downloading">Downloading</string>
+    <string name="update_flash">Flash</string>
+    <string name="update_pause">Pause</string>
+    <string name="update_download_info">Update is downloading now!</string>
     <!-- Update Menu -->
     <string name="text_menu_copy_url">Copy url</string>
     <string name="text_menu_update_log">Log</string>
     <string name="text_menu_delete_update">Delete</string>
+    <!-- ProgressBar -->
+    <string name="text_progress" translatable="false">%1$d %%</string>
 
     <!-- ToolBar -->
     <string name="text_refresh">Refresh</string>
