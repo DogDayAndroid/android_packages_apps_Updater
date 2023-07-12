@@ -2,10 +2,8 @@ package top.easterNday.settings.Update
 
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.DownloadManager
 import android.content.Context
-import android.net.Uri
 import android.os.RecoverySystem
 import android.view.LayoutInflater
 import android.view.MenuInflater
@@ -13,17 +11,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.widget.PopupMenu
-import androidx.core.net.toFile
 import androidx.recyclerview.widget.RecyclerView
 import top.easterNday.settings.DogDay.LogUtils.logger
 import top.easterNday.settings.DogDay.Utils.Companion.copyLink2Clipboard
 import top.easterNday.settings.DogDay.Utils.Companion.downloadFromUrl
-import top.easterNday.settings.DogDay.Utils.Companion.genDownloadPath
+import top.easterNday.settings.DogDay.Utils.Companion.getDownloadFilePathById
 import top.easterNday.settings.DogDay.Utils.Companion.getDownloadIdByUrl
 import top.easterNday.settings.DogDay.Utils.Companion.getDownloadStatusById
-import top.easterNday.settings.DogDay.Utils.Companion.queryDownloadProgress
 import top.easterNday.settings.DogDay.Utils.Companion.showAlertDialog
 import top.easterNday.settings.R
+import java.io.File
 import java.util.*
 
 
@@ -41,6 +38,7 @@ UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList
         val size: TextView
         val tag: TextView
         val actionButton: Button
+
         val mMenu: ImageButton
         val mProgress: LinearLayout
         val mProgressBar: ProgressBar
@@ -81,7 +79,6 @@ UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList
         val downloadUrl = dataSet[position].updateUrl
         val updateLog = dataSet[position].updateDesc
         val filename = dataSet[position].updateTitle
-        val fileUri = genDownloadPath(mContext.getString(R.string.download_sub_dir), filename)
 
         viewHolder.title.text = filename
         viewHolder.version.text = dataSet[position].updateVersion
@@ -91,20 +88,18 @@ UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList
 
         // 绑定 Popup 菜单功能
         viewHolder.mMenu.setOnClickListener {
-            showPopup(mContext, viewHolder.mMenu, downloadUrl, updateLog)
+            viewHolder.showPopup(downloadUrl, updateLog)
         }
 
         // 设定下载显示
-        viewHolder.setDownload(mContext, downloadUrl, fileUri, filename)
+        viewHolder.setDownload(mContext, downloadUrl)
     }
 
     private fun ViewHolder.setDownload(
         context: Context,
-        downloadUrl: String,
-        fileUri: Uri,
-        fileName: String
+        downloadUrl: String
     ): Long? {
-        val fileId: Long? = getDownloadIdByUrl(mContext, downloadUrl, fileUri)
+        val fileId: Long? = getDownloadIdByUrl(mContext, downloadUrl)
         if (fileId == null) {
             // 设置按钮字样为 下载
             actionButton.text = mContext.getString(R.string.update_download)
@@ -115,11 +110,10 @@ UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList
                 // 调用系统服务进行下载
                 downloadFromUrl(
                     mContext,
-                    downloadUrl,
-                    fileUri
+                    downloadUrl
                 )
                 // 启动计时器，每隔一段时间查询下载进度并更新进度条
-                checkDownload(mContext, downloadUrl, fileUri, fileName)
+                // checkDownload(mContext, downloadUrl, fileUri, fileName)
             }
         } else {
             // 判断下载状态
@@ -131,7 +125,7 @@ UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList
                     // 显示下载进度条
                     showProgress(true)
                     // 启动计时器，每隔一段时间查询下载进度并更新进度条
-                    checkDownload(mContext, downloadUrl, fileUri, fileName)
+                    // checkDownload(mContext, downloadUrl, fileUri, fileName)
                 }
                 // 如果下载成功
                 DownloadManager.STATUS_SUCCESSFUL -> {
@@ -141,9 +135,12 @@ UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList
                     actionButton.removeCallbacks(null)
                     // 刷入当前刷机包
                     actionButton.setOnClickListener {
-                        val file = fileUri.toFile()
-                        logger.d("Install %s", file.toString())
-                        RecoverySystem.installPackage(mContext, file)
+                        val filePath = getDownloadFilePathById(mContext, fileId)
+                        if (filePath != null) {
+                            logger.d("Install %s", filePath)
+                            val file = File(filePath)
+                            RecoverySystem.installPackage(mContext, file)
+                        }
                     }
                 }
                 // 如果下载暂停
@@ -154,34 +151,6 @@ UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList
             }
         }
         return fileId
-    }
-
-    // 检查下载进度，更新进度条
-    private fun ViewHolder.checkDownload(
-        context: Context,
-        downloadUrl: String,
-        fileUri: Uri,
-        fileName: String
-    ) {
-        val timer = Timer()
-        timer.scheduleAtFixedRate(object : TimerTask() {
-            override fun run() {
-                (context as Activity).runOnUiThread {
-                    val downloadId = setDownload(context, downloadUrl, fileUri, fileName)
-                    if (downloadId != null) {
-                        showProgress(true)
-                        val progress = queryDownloadProgress(context, downloadId)
-
-                        mProgressBar.setProgress(progress, true)
-                        mProgressBarPercent.text = mContext.getString(R.string.text_progress, progress)
-                        // TODO:显示mProgressText内容
-                    } else {
-                        showProgress(false)
-                        timer.cancel()
-                    }
-                }
-            }
-        }, 0, 1000) // 每隔1秒查询一次下载进度，你可以根据需要调整时间间隔
     }
 
     /**
@@ -201,7 +170,7 @@ UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList
      * The function `showPopup` displays a popup menu with options to copy a URL to the clipboard and show
      * an update log.
      *
-     * @param c The `Context` object, which represents the current state of the application or activity.
+     * @param mContext The `Context` object, which represents the current state of the application or activity.
      * @param v The `View` parameter `v` represents the view that the popup menu should be anchored to.
      * This is typically the view that triggered the popup menu to be shown, such as a button or an image.
      * @param url The URL that will be copied to the clipboard when the "Copy URL" option is selected from
@@ -210,8 +179,8 @@ UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList
      * particular item. It is used to display the update log when the corresponding menu option is
      * selected.
      */
-    private fun showPopup(c: Context, v: View, url: String, log: String) {
-        val popup = PopupMenu(c, v)
+    private fun ViewHolder.showPopup(url: String, log: String) {
+        val popup = PopupMenu(mContext, mMenu)
         val inflater: MenuInflater = popup.menuInflater
         inflater.inflate(R.menu.menu_update_item, popup.menu)
 
@@ -220,12 +189,12 @@ UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList
             when (menuItem.itemId) {
                 R.id.menu_copy_url -> {
                     // 复制内容到剪贴板
-                    copyLink2Clipboard(c, url)
+                    copyLink2Clipboard(mContext, url)
                     true
                 }
 
                 R.id.menu_update_log -> {
-                    showAlertDialog(c, c.getString(R.string.text_menu_update_log), log)
+                    showAlertDialog(mContext, mContext.getString(R.string.text_menu_update_log), log)
                     true
                 }
 
