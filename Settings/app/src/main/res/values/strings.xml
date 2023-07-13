@@ -7,7 +7,7 @@
     <string name="tong_version_text">System Version</string>
     <string name="summary">Code is poetry</string>
     <string name="kernel_version_text">Kernel Version</string>
-    <string name="download_list_text">Download list</string>
+    <string name="settings_text">Special Settings</string>
 
     <!-- About -->
     <string name="text_check_update">Check for updates</string>
