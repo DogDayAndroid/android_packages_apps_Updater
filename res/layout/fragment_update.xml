@@ -14,7 +14,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginBottom="120dp"
-            tools:context=".UpdateFragment">
+            tools:context=".Update.UpdateFragment">
 
         <androidx.core.widget.NestedScrollView
                 android:layout_height="match_parent"

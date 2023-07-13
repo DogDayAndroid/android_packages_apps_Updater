@@ -16,7 +16,7 @@
     </fragment>
     <fragment
             android:id="@+id/updateFragment"
-            android:name="top.easterNday.settings.UpdateFragment"
+            android:name="top.easterNday.settings.Update.UpdateFragment"
             android:label="{title}"
             tools:layout="@layout/fragment_update">
         <argument
