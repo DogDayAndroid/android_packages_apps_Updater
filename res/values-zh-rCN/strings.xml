@@ -5,7 +5,6 @@
     <string name="tong_version_text">系统版本</string>
     <string name="summary">你好，世界</string>
     <string name="kernel_version_text">内核版本</string>
-    <string name="download_list_text">下载列表</string>
 
     <!-- Update -->
     <string name="text_check_update">检查更新</string>
@@ -28,4 +27,5 @@
     <string name="update_downloading">下载中</string>
     <string name="update_download_info">正在下载更新！</string>
     <string name="update_resume">恢复下载</string>
+    <string name="settings_text">特殊设置</string>
 </resources>

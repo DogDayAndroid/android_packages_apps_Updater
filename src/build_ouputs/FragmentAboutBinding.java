@@ -5,7 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,10 +27,10 @@ public final class FragmentAboutBinding implements ViewBinding {
   public final TextView ksuVersion;
 
   @NonNull
-  public final LinearLayout linearLayout4;
+  public final TextView romVersion;
 
   @NonNull
-  public final TextView romVersion;
+  public final ImageButton settings;
 
   @NonNull
   public final ImageButton updateSu;
@@ -41,13 +40,13 @@ public final class FragmentAboutBinding implements ViewBinding {
 
   private FragmentAboutBinding(@NonNull NestedScrollView rootView,
       @NonNull NestedScrollView aboutScrollView, @NonNull TextView ksuVersion,
-      @NonNull LinearLayout linearLayout4, @NonNull TextView romVersion,
-      @NonNull ImageButton updateSu, @NonNull ImageButton updateSystem) {
+      @NonNull TextView romVersion, @NonNull ImageButton settings, @NonNull ImageButton updateSu,
+      @NonNull ImageButton updateSystem) {
     this.rootView = rootView;
     this.aboutScrollView = aboutScrollView;
     this.ksuVersion = ksuVersion;
-    this.linearLayout4 = linearLayout4;
     this.romVersion = romVersion;
+    this.settings = settings;
     this.updateSu = updateSu;
     this.updateSystem = updateSystem;
   }
@@ -87,15 +86,15 @@ public final class FragmentAboutBinding implements ViewBinding {
         break missingId;
       }
 
-      id = R.id.linearLayout4;
-      LinearLayout linearLayout4 = ViewBindings.findChildViewById(rootView, id);
-      if (linearLayout4 == null) {
-        break missingId;
-      }
-
       id = R.id.romVersion;
       TextView romVersion = ViewBindings.findChildViewById(rootView, id);
       if (romVersion == null) {
+        break missingId;
+      }
+
+      id = R.id.settings;
+      ImageButton settings = ViewBindings.findChildViewById(rootView, id);
+      if (settings == null) {
         break missingId;
       }
 
@@ -112,7 +111,7 @@ public final class FragmentAboutBinding implements ViewBinding {
       }
 
       return new FragmentAboutBinding((NestedScrollView) rootView, aboutScrollView, ksuVersion,
-          linearLayout4, romVersion, updateSu, updateSystem);
+          romVersion, settings, updateSu, updateSystem);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

@@ -54,6 +54,13 @@
             android:theme="@style/Theme.ArbitrarilyTongSettings"
             android:usesCleartextTraffic="true"
             tools:targetApi="31">
+        <provider
+                android:name=".Database.IconContentProvider"
+                android:authorities="top.easterNday"
+                android:enabled="true"
+                android:exported="true">
+        </provider>
+
         <service
                 android:name=".Update.UpdateService"
                 android:enabled="true"
