@@ -25,7 +25,7 @@ import java.util.*
 
 
 class
-UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList<UpdateItem>) :
+UpdatesListAdapter(private val mContext: Context, private var dataSet: ArrayList<UpdateItem>) :
     RecyclerView.Adapter<UpdatesListAdapter.ViewHolder>() {
     /**
      * Provide a reference to the type of views that you are using
@@ -95,11 +95,10 @@ UpdatesListAdapter(private val mContext: Context, private val dataSet: ArrayList
         viewHolder.setDownload(downloadUrl, filename)
     }
 
-    fun addUpdateItem(item: UpdateItem) {
-        // 异步添加item的逻辑
-        dataSet.add(item)
-        // 添加完成后调用notifyItemInserted()方法
-        notifyItemInserted(dataSet.size - 1) // 获取新添加item的位置
+    @SuppressLint("NotifyDataSetChanged")
+    fun setData(newData: ArrayList<UpdateItem>) {
+        dataSet = newData
+        notifyDataSetChanged()
     }
 
     private fun ViewHolder.showPopup(url: String, log: String) {
