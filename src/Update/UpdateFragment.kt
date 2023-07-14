@@ -9,7 +9,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import okhttp3.*
 import org.json.JSONArray
-import top.easterNday.settings.DogDay.LogUtils
 import top.easterNday.settings.DogDay.LogUtils.logger
 import top.easterNday.settings.R
 import top.easterNday.settings.databinding.FragmentUpdateBinding
@@ -18,17 +17,25 @@ import java.io.IOException
 class UpdateFragment : Fragment() {
 
     private lateinit var viewModelFragment: UpdateFragmentViewModel
+
     private var _binding: FragmentUpdateBinding? = null
     private val binding get() = _binding!!
+
+    private var typeTag: String = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        logger.d(requireArguments())
+        if (requireArguments().getString("title")!! == requireContext().getString(R.string.text_system_update)) {
+            typeTag = "System"
+        } else if (requireArguments().getString("title")!! == requireContext().getString(R.string.text_kernel_update)) {
+            typeTag = "Kernel"
+        }
+        logger.d(typeTag)
         viewModelFragment =
-            ViewModelProvider(requireActivity())[requireArguments().getString("title")!!, UpdateFragmentViewModel::class.java]
+            ViewModelProvider(requireActivity())[typeTag, UpdateFragmentViewModel::class.java]
         _binding = FragmentUpdateBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -40,8 +47,9 @@ class UpdateFragment : Fragment() {
         val adapter = UpdatesListAdapter(requireContext(), dataArray)
         binding.downloadListView.adapter = adapter
 
-        val cachedData = viewModelFragment.getUpdateData().value
-        if (cachedData != null) {
+        val cachedData = viewModelFragment.getUpdateData(view.context, typeTag)
+        logger.d(cachedData.size)
+        if (cachedData.size > 0) {
             logger.d("从本地获取!")
             // Use cached data
             adapter.setData(cachedData)
@@ -51,7 +59,7 @@ class UpdateFragment : Fragment() {
             fetchDataFromNetwork { updateItems ->
                 requireActivity().runOnUiThread {
                     adapter.setData(updateItems)
-                    viewModelFragment.setUpdateData(view.context, requireArguments().getString("title")!!, updateItems)
+                    viewModelFragment.setUpdateData(updateItems)
                 }
             }
         }
@@ -71,27 +79,18 @@ class UpdateFragment : Fragment() {
         val call: Call = okHttpClient.newCall(request)
         call.enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                LogUtils.logger.e(e.message)
+                logger.e(e.message)
             }
 
             override fun onResponse(call: Call, response: Response) {
-                LogUtils.logger.d(response.body.toString())
+                logger.d(response.body.toString())
                 val data = JSONArray(response.body.string())
 
                 val updateItems = ArrayList<UpdateItem>()
                 for (i in 0 until data.length()) {
                     val infos = data.getJSONObject(i)
                     updateItems.add(
-                        UpdateItem(
-                            requireContext(),
-                            infos.getLong("datetime"),
-                            infos.getString("desc"),
-                            infos.getString("filename"),
-                            infos.getLong("size"),
-                            infos.getString("tag"),
-                            infos.getString("url"),
-                            infos.getString("version")
-                        )
+                        UpdateItem(requireContext(), infos, typeTag)
                     )
                 }
 

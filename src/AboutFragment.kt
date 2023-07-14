@@ -1,7 +1,6 @@
 package top.easterNday.settings
 
 import android.content.ContentValues
-import android.net.Uri
 import android.os.Bundle
 import android.os.SystemProperties
 import android.system.Os
@@ -12,6 +11,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import top.easterNday.settings.Database.IconProvider
 import top.easterNday.settings.databinding.FragmentAboutBinding
 
 
@@ -59,7 +59,7 @@ class AboutFragment : Fragment() {
         binding.updateSystem.setOnClickListener {
             // 数据传递
             val args = Bundle()
-            args.putString("title", "系统更新")
+            args.putString("title", requireContext().getString(R.string.text_system_update))
             // args.putString("extraTitle", "作者")
             findNavController().navigate(R.id.action_aboutFragment_to_updateFragment, args)
         }
@@ -67,7 +67,7 @@ class AboutFragment : Fragment() {
         binding.updateSu.setOnClickListener {
             // 数据传递
             val args = Bundle()
-            args.putString("title", "内核更新")
+            args.putString("title", requireContext().getString(R.string.text_kernel_update))
             // args.putString("extraTitle", "编译工具链")
             findNavController().navigate(R.id.action_aboutFragment_to_updateFragment, args)
         }
@@ -85,7 +85,7 @@ class AboutFragment : Fragment() {
             values.put("contributorName", "fankes")
             values.put("isEnabled", true)
             values.put("isEnabledAll", false)
-            val uri = Uri.parse("content://top.easterNday/ICON")
+            val uri = IconProvider.getURI()
             resolver.insert(uri, values)
             Toast.makeText(view.context, "数据插入成功", Toast.LENGTH_SHORT).show()
 

@@ -76,15 +76,15 @@ UpdatesListAdapter(private val mContext: Context, private var dataSet: ArrayList
 
     @SuppressLint("RestrictedApi")
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
-        val downloadUrl = dataSet[position].updateUrl
-        val updateLog = dataSet[position].updateDesc
-        val filename = dataSet[position].updateTitle
+        val downloadUrl = dataSet[position].url
+        val updateLog = dataSet[position].describe
+        val filename = dataSet[position].filename
 
         viewHolder.title.text = filename
-        viewHolder.version.text = dataSet[position].updateVersion
-        viewHolder.datetime.text = dataSet[position].updateDate
-        viewHolder.size.text = dataSet[position].updateSize
-        viewHolder.tag.text = dataSet[position].updateTag
+        viewHolder.version.text = dataSet[position].version
+        viewHolder.datetime.text = dataSet[position].datetime
+        viewHolder.size.text = dataSet[position].size
+        viewHolder.tag.text = dataSet[position].tag
 
         // 绑定 Popup 菜单功能
         viewHolder.mMenu.setOnClickListener {

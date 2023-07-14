@@ -11,6 +11,8 @@
 
     <!-- About -->
     <string name="text_check_update">Check for updates</string>
+    <string name="text_system_update">Update system</string>
+    <string name="text_kernel_update">Update kernel</string>
 
     <!-- Download -->
     <string name="download_sub_dir" translatable="false">roms</string>
