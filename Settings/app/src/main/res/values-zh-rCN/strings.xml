@@ -28,4 +28,6 @@
     <string name="update_download_info">正在下载更新！</string>
     <string name="update_resume">恢复下载</string>
     <string name="settings_text">特殊设置</string>
+    <string name="text_kernel_update">内核更新</string>
+    <string name="text_system_update">系统更新</string>
 </resources>

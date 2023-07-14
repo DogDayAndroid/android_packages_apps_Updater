@@ -6,22 +6,23 @@ import android.content.ContentValues
 import android.content.UriMatcher
 import android.database.Cursor
 import android.net.Uri
+import top.easterNday.settings.DogDay.LogUtils
 
-class IconProvider : ContentProvider() {
+
+class UpdateProvider : ContentProvider() {
 
     private lateinit var dbHelper: Helper
 
     // 定义 URI 匹配器
     private val uriMatcher = UriMatcher(UriMatcher.NO_MATCH)
 
-    // 定义 URI 匹配的常量
-    private val icons = 1
-    private val packageName = 2
+    private val KERNELS = 1
+    private val KERNEL_ID = 2
 
     init {
         // 添加 URI 匹配规则
-        uriMatcher.addURI(authority, path, icons)
-        uriMatcher.addURI(authority, "${path}/#", packageName)
+        uriMatcher.addURI(authority, path, KERNELS)
+        uriMatcher.addURI(authority, "${path}/#", KERNEL_ID)
     }
 
     override fun onCreate(): Boolean {
@@ -40,9 +41,9 @@ class IconProvider : ContentProvider() {
         val cursor: Cursor?
 
         when (uriMatcher.match(uri)) {
-            icons -> {
+            KERNELS -> {
                 cursor = db.query(
-                    Companion.path,
+                    path,
                     projection,
                     selection,
                     selectionArgs,
@@ -52,9 +53,9 @@ class IconProvider : ContentProvider() {
                 )
             }
 
-            packageName -> {
+            KERNEL_ID -> {
                 val id = ContentUris.parseId(uri)
-                val singleSelection = "${Companion.path}.packageName = ?"
+                val singleSelection = "${Companion.path}.id = ?"
                 val singleSelectionArgs = arrayOf(id.toString())
 
                 cursor = db.query(
@@ -75,15 +76,18 @@ class IconProvider : ContentProvider() {
         return cursor
     }
 
+
     override fun insert(uri: Uri, values: ContentValues?): Uri {
         val db = dbHelper.writableDatabase
 
         // 查询数据是否存在
-        val selection = "${Companion.path}.packageName = ?"
-        val selectionArgs = arrayOf(values?.getAsString("packageName"))
+        val selection = "${path}.id = ?"
+        val selectionArgs = arrayOf(values?.getAsString("id"))
+
+        LogUtils.logger.d(authority)
 
         val cursor = db.query(
-            Companion.path,
+            path,
             null,
             selection,
             selectionArgs,
@@ -120,8 +124,6 @@ class IconProvider : ContentProvider() {
         throw IllegalArgumentException("Failed to insert row into $uri")
     }
 
-
-
     override fun update(
         uri: Uri,
         values: ContentValues?,
@@ -154,8 +156,8 @@ class IconProvider : ContentProvider() {
             return Uri.parse("content://$authority/$path");
         }
 
-        // 定义 ContentProvider 的授权信息
-        private const val path = Helper.icon_tableName
+        private const val path = Helper.kernel_tableName
         private const val authority = "${Helper.dbAuthorities}.$path"
     }
 }
+

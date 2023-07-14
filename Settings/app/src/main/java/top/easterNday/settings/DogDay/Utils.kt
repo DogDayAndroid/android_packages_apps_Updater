@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.RecoverySystem
+import android.text.format.Formatter
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -29,11 +30,16 @@ class Utils {
          * @param unixTimeStamp `unixTimeStamp` 参数是一个长值，表示自 1970 年 1 月 1 日 00:00:00 UTC（协调世界时）以来经过的秒数。
          * @return 表示与给定 Unix 时间戳对应的本地时间的格式化字符串。
          */
-        fun convertUnixToLocalTime(unixTimeStamp: Long): String {
-            val date = Date(unixTimeStamp * 1000) // 将 Unix 时间戳转换为毫秒
+        fun Long.convertUnixToLocalTime(): String {
+            val date = Date(this * 1000) // 将 Unix 时间戳转换为毫秒
             val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()) // 指定日期格式和本地化
             sdf.timeZone = TimeZone.getDefault() // 将时区设置为设备的默认时区
             return sdf.format(date) // 格式化为当地时间字符串
+        }
+
+
+        fun Long.formatFileSize(context: Context): String {
+            return Formatter.formatFileSize(context, this)
         }
 
         /**
@@ -84,9 +90,8 @@ class Utils {
             val file = File(update.path.toString())
             if (file.exists()) {
                 RecoverySystem.installPackage(this, file)
-            }
-            else{
-                showAlertDialog(this,"错误","没有下载对应文件或对应文件损坏!")
+            } else {
+                showAlertDialog(this, "错误", "没有下载对应文件或对应文件损坏!")
             }
         }
 

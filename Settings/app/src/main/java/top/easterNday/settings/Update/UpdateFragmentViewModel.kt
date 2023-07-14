@@ -1,26 +1,19 @@
 package top.easterNday.settings.Update
 
 import android.content.Context
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class UpdateFragmentViewModel : ViewModel() {
-    private val updateData = MutableLiveData<ArrayList<UpdateItem>>()
 
-    fun getUpdateData(): LiveData<ArrayList<UpdateItem>> {
-        return updateData
+    fun getUpdateData(context: Context, typeTag: String): ArrayList<UpdateItem> {
+        return UpdateItem.getAll(context, typeTag)
     }
 
-    fun setUpdateData(context: Context, key: String, data: ArrayList<UpdateItem>) {
-        updateData.value = data
-
-        // TODO: 保存数据到 SharedPreferences 或者 SQLite
-        // 保存数据到 SharedPreferences
-        // val sharedPreferences = context.getSharedPreferences(key, Context.MODE_PRIVATE)
-        // val editor = sharedPreferences.edit()
-        // editor.putString(key, data.toString())
-        // editor.apply()
+    fun setUpdateData(data: ArrayList<UpdateItem>) {
+        // 保存数据到SQLite
+        data.forEach { item ->
+            item.updateInfo()
+        }
     }
 }
 
