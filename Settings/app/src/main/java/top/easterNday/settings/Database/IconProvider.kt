@@ -6,14 +6,13 @@ import android.content.ContentValues
 import android.content.UriMatcher
 import android.database.Cursor
 import android.net.Uri
-import top.easterNday.settings.GlobalSettings
 
 class IconContentProvider : ContentProvider() {
 
     private lateinit var dbHelper: Helper
 
     // 定义 ContentProvider 的授权信息
-    private val authority = GlobalSettings.dbAuthorities
+    private val authority = Helper.dbAuthorities
     private val path = Helper.icon_tableName
 
     // 定义 URI 匹配器
@@ -82,14 +81,50 @@ class IconContentProvider : ContentProvider() {
 
     override fun insert(uri: Uri, values: ContentValues?): Uri {
         val db = dbHelper.writableDatabase
+
+        // 查询数据是否存在
+        val selection = "${Helper.icon_tableName}.packageName = ?"
+        val selectionArgs = arrayOf(values?.getAsString("packageName"))
+
+        val cursor = db.query(
+            Helper.icon_tableName,
+            null,
+            selection,
+            selectionArgs,
+            null,
+            null,
+            null
+        )
+
+        if (cursor != null && cursor.count > 0) {
+            // 数据已存在，执行更新操作
+            val updatedRows = db.update(
+                Helper.icon_tableName,
+                values,
+                selection,
+                selectionArgs
+            )
+            if (updatedRows > 0) {
+                context?.contentResolver?.notifyChange(uri, null)
+                return uri
+            } else {
+                cursor.close()
+                throw IllegalArgumentException("Failed to update row: $uri")
+            }
+        }
+
+        // 数据不存在，执行插入操作
         val rowId = db.insert(Helper.icon_tableName, null, values)
         if (rowId > 0) {
             val insertedUri = ContentUris.withAppendedId(uri, rowId)
             context?.contentResolver?.notifyChange(uri, null)
             return insertedUri
         }
+
         throw IllegalArgumentException("Failed to insert row into $uri")
     }
+
+
 
     override fun update(
         uri: Uri,
