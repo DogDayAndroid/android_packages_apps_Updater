@@ -55,13 +55,13 @@
             android:usesCleartextTraffic="true"
             tools:targetApi="31">
         <provider
-                android:name=".Database.UpdateProvider"
+                android:name="top.easterNday.settings.Database.UpdateProvider"
                 android:authorities="top.easterNday.KERNEL"
                 android:enabled="true"
                 android:exported="true">
         </provider>
         <provider
-                android:name=".Database.IconProvider"
+                android:name="top.easterNday.settings.Database.IconProvider"
                 android:authorities="top.easterNday.ICON"
                 android:enabled="true"
                 android:exported="true">
