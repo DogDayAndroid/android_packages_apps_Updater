@@ -16,13 +16,13 @@ class UpdateProvider : ContentProvider() {
     // 定义 URI 匹配器
     private val uriMatcher = UriMatcher(UriMatcher.NO_MATCH)
 
-    private val KERNELS = 1
-    private val KERNEL_ID = 2
+    private val UPDATE = 1
+    private val UPDATE_ID = 2
 
     init {
         // 添加 URI 匹配规则
-        uriMatcher.addURI(authority, path, KERNELS)
-        uriMatcher.addURI(authority, "${path}/#", KERNEL_ID)
+        uriMatcher.addURI(authority, path, UPDATE)
+        uriMatcher.addURI(authority, "${path}/#", UPDATE_ID)
     }
 
     override fun onCreate(): Boolean {
@@ -41,7 +41,7 @@ class UpdateProvider : ContentProvider() {
         val cursor: Cursor?
 
         when (uriMatcher.match(uri)) {
-            KERNELS -> {
+            UPDATE -> {
                 cursor = db.query(
                     path,
                     projection,
@@ -53,7 +53,7 @@ class UpdateProvider : ContentProvider() {
                 )
             }
 
-            KERNEL_ID -> {
+            UPDATE_ID -> {
                 val id = ContentUris.parseId(uri)
                 val singleSelection = "${Companion.path}.id = ?"
                 val singleSelectionArgs = arrayOf(id.toString())
@@ -156,7 +156,7 @@ class UpdateProvider : ContentProvider() {
             return Uri.parse("content://$authority/$path");
         }
 
-        private const val path = Helper.kernel_tableName
+        private const val path = Helper.update_tableName
         private const val authority = "${Helper.dbAuthorities}.$path"
     }
 }

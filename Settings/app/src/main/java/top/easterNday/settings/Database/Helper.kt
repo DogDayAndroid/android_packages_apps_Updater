@@ -8,7 +8,7 @@ class Helper(context: Context) : SQLiteOpenHelper(context, dbName, null, 1) {
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL("CREATE TABLE IF NOT EXISTS $icon_tableName (packageName TEXT PRIMARY KEY, appName TEXT, iconBitmap TEXT, iconColor TEXT, contributorName TEXT, isEnabled INTEGER, isEnabledAll INTEGER)")
-        db.execSQL("CREATE TABLE IF NOT EXISTS $kernel_tableName (id INTEGER PRIMARY KEY, datetime REAL, describe TEXT, filename TEXT, size INTEGER, tag TEXT, url TEXT, version TEXT, downloadID INTEGER DEFAULT NULL, type TEXT)")
+        db.execSQL("CREATE TABLE IF NOT EXISTS $update_tableName (id INTEGER PRIMARY KEY, datetime REAL, describe TEXT, filename TEXT, size INTEGER, tag TEXT, url TEXT, version TEXT, downloadID INTEGER DEFAULT NULL, type TEXT)")
     }
 
 
@@ -21,6 +21,6 @@ class Helper(context: Context) : SQLiteOpenHelper(context, dbName, null, 1) {
         const val dbName = "DogDay.db"
 
         const val icon_tableName = "ICON"
-        const val kernel_tableName = "KERNEL"
+        const val update_tableName = "UPDATES"
     }
 }
