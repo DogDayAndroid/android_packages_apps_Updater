@@ -17,7 +17,7 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import top.easterNday.settings.DogDay.Utils.Companion.copyLink2Clipboard
-import top.easterNday.settings.DogDay.Utils.Companion.installPackage
+import top.easterNday.settings.DogDay.Utils.Companion.installUpdate
 import top.easterNday.settings.DogDay.Utils.Companion.showAlertDialog
 import top.easterNday.settings.R
 import java.io.File
@@ -244,7 +244,7 @@ UpdatesListAdapter(private val mContext: Context, private var dataSet: ArrayList
                         showProgress(false)
                         updateActionButtonText(mContext.getString(R.string.update_flash))
                         updateActionButtonClick {
-                            mContext.installPackage(getDownloadUri())
+                            mContext.installUpdate(getDownloadUri())
                         }
                     }
 

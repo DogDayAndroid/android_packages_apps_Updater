@@ -1,14 +1,13 @@
 package top.easterNday.settings.DogDay
 
 import android.app.AlertDialog
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
-import android.content.Intent
+import android.content.*
 import android.net.Uri
 import android.os.RecoverySystem
+import android.provider.OpenableColumns
 import android.text.format.Formatter
 import java.io.File
+import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -38,6 +37,9 @@ class Utils {
         }
 
 
+        /* “formatFileSize”函数是 Kotlin
+        中的一个实用函数，它采用表示文件大小的“Long”值和一个“Context”对象作为参数。它使用“Formatter.formatFileSize”方法，使用提供的“Context”对象将文件大小格式化为人类可读的格式（例如“10
+        MB”、“1.5 GB”）。然后该函数以“String”形式返回格式化的文件大小。 */
         fun Long.formatFileSize(context: Context): String {
             return Formatter.formatFileSize(context, this)
         }
@@ -86,14 +88,37 @@ class Utils {
             context.startActivity(intent)
         }
 
-        fun Context.installPackage(update: Uri) {
+        /* `installUpdate` 函数用于在 Android 中安装更新包。它采用一个“Uri”参数来表示更新包文件的位置。 */
+        fun Context.installUpdate(update: Uri) {
             val file = File(update.path.toString())
             if (file.exists()) {
                 RecoverySystem.installPackage(this, file)
             } else {
+                // TODO: 增加多语言
                 showAlertDialog(this, "错误", "没有下载对应文件或对应文件损坏!")
             }
         }
 
+
+        /* getRealPathFromUri 函数是 Kotlin 中的一个实用函数，它将“Uri”作为输入并返回与该“Uri”对应的文件的真实路径。 */
+        fun Context.getRealPathFromUri(uri: Uri): Uri? {
+
+            fun getDisplayName(contentResolver: ContentResolver, uri: Uri): String? {
+                contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                    if (cursor.moveToFirst()) {
+                        return cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
+                    }
+                }
+                return null
+            }
+
+            val file = File(externalCacheDir, getDisplayName(contentResolver, uri)!!)
+            contentResolver.openInputStream(uri)?.use { inputStream ->
+                FileOutputStream(file).use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+            return Uri.parse(file.absolutePath)
+        }
     }
 }
