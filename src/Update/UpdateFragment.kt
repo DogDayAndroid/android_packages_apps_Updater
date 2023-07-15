@@ -29,9 +29,9 @@ class UpdateFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         if (requireArguments().getString("title")!! == requireContext().getString(R.string.text_system_update)) {
-            typeTag = "System"
+            typeTag = "system"
         } else if (requireArguments().getString("title")!! == requireContext().getString(R.string.text_kernel_update)) {
-            typeTag = "Kernel"
+            typeTag = "kernel"
         }
         logger.d(typeTag)
         viewModelFragment =
@@ -42,28 +42,30 @@ class UpdateFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // 设定列表布局
         binding.downloadListView.layoutManager = LinearLayoutManager(binding.root.context)
-        val dataArray = ArrayList<UpdateItem>()
-        val adapter = UpdatesListAdapter(requireContext(), dataArray)
+
+        // 获取数据
+        fun getData(): ArrayList<UpdateItem> {
+            return viewModelFragment.getUpdateData(view.context, typeTag)
+        }
+
+        // 绑定数据列表
+        val adapter = UpdatesListAdapter(requireContext(), getData())
         binding.downloadListView.adapter = adapter
 
-        val cachedData = viewModelFragment.getUpdateData(view.context, typeTag)
-        logger.d(cachedData.size)
-        if (cachedData.size > 0) {
-            logger.d("从本地获取!")
-            // Use cached data
-            adapter.setData(cachedData)
-        } else {
+        // 数据不存在则刷新数据
+        if (getData().isEmpty()) {
             logger.d("从网络获取!")
-            // Fetch data from the network
             fetchDataFromNetwork { updateItems ->
                 requireActivity().runOnUiThread {
-                    adapter.setData(updateItems)
                     viewModelFragment.setUpdateData(updateItems)
+                    adapter.setData(getData())
                 }
             }
         }
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -90,7 +92,7 @@ class UpdateFragment : Fragment() {
                 for (i in 0 until data.length()) {
                     val infos = data.getJSONObject(i)
                     updateItems.add(
-                        UpdateItem(requireContext(), infos, typeTag)
+                        UpdateItem(requireContext(), infos)
                     )
                 }
 

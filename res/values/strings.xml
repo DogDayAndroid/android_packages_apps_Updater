@@ -17,7 +17,7 @@
     <!-- Download -->
     <string name="download_sub_dir" translatable="false">roms</string>
     <!-- Update -->
-    <string name="releases_info_url" translatable="false">https://raw.githubusercontent.com/ArbitrarilyTong-infra/ArbitrarilyTong.github.io/Update/thyme/kernel.json</string>
+    <string name="releases_info_url" translatable="false">https://raw.githubusercontent.com/ArbitrarilyTong-infra/ArbitrarilyTong.github.io/Update/thyme.json</string>
     <string name="update_version">Version: %1$s</string>
     <string name="update_date">Last update: %1$s</string>
     <string name="update_title" translatable="false">%1$s</string>

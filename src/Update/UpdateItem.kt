@@ -2,7 +2,6 @@ package top.easterNday.settings.Update
 
 import android.content.ContentValues
 import android.content.Context
-import android.widget.Toast
 import org.json.JSONObject
 import top.easterNday.settings.Database.UpdateProvider
 import top.easterNday.settings.DogDay.LogUtils.logger
@@ -13,7 +12,6 @@ import top.easterNday.settings.R
 class UpdateItem(
     context: Context,
     json: JSONObject,
-    private var typeTag: String
 ) {
     private val mContext = context
 
@@ -36,6 +34,8 @@ class UpdateItem(
     var url: String = json.optString("url")
     var tag: String = json.optString("tag")
 
+    var typeTag: String = json.optString("type")
+
     private var downloadID: Long? = null
 
     constructor(
@@ -50,7 +50,7 @@ class UpdateItem(
         tag: String,
         downloadID: Long?,
         typeTag: String
-    ) : this(context, JSONObject(), typeTag) {
+    ) : this(context, JSONObject()) {
         this.id = id
         this.filename = filename
         this.version = version
@@ -79,7 +79,6 @@ class UpdateItem(
 
         val uri = UpdateProvider.getURI()
         resolver.insert(uri, values)
-        Toast.makeText(mContext, "更新数据插入成功", Toast.LENGTH_SHORT).show()
     }
 
     companion object {
