@@ -2,8 +2,8 @@
 
 ## W.I.P
 
-- Update KernelSU
-- Update System
+- Use OKhttp3 to replace DownloadManager
+- Icon setter
 
 ## Use Github API
 

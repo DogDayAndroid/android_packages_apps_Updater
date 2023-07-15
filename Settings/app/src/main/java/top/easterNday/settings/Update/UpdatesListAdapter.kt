@@ -88,11 +88,11 @@ UpdatesListAdapter(private val mContext: Context, private var dataSet: ArrayList
 
         // 绑定 Popup 菜单功能
         viewHolder.mMenu.setOnClickListener {
-            viewHolder.showPopup(downloadUrl, updateLog)
+            viewHolder.showPopup(downloadUrl, updateLog, dataSet[position].downloadID)
         }
 
         // 设定下载显示
-        viewHolder.setDownload(downloadUrl, filename)
+        viewHolder.setDownload(dataSet[position], downloadUrl, filename)
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -101,7 +101,7 @@ UpdatesListAdapter(private val mContext: Context, private var dataSet: ArrayList
         notifyDataSetChanged()
     }
 
-    private fun ViewHolder.showPopup(url: String, log: String) {
+    private fun ViewHolder.showPopup(url: String, log: String, downloadID: Long?) {
         val popup = PopupMenu(mContext, mMenu)
         val inflater: MenuInflater = popup.menuInflater
         inflater.inflate(R.menu.menu_update_item, popup.menu)
@@ -121,7 +121,12 @@ UpdatesListAdapter(private val mContext: Context, private var dataSet: ArrayList
                 }
 
                 R.id.menu_delete_action -> {
-                    TODO()
+                    if (downloadID != null) {
+                        val contentResolver = mContext.contentResolver
+                        val downloadManager = mContext.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                        contentResolver.delete(downloadManager.getUriForDownloadedFile(downloadID), null, null)
+                    }
+                    true
                 }
 
                 else -> false
@@ -148,7 +153,7 @@ UpdatesListAdapter(private val mContext: Context, private var dataSet: ArrayList
         }
     }
 
-    private fun ViewHolder.setDownload(downloadUrl: String, filename: String) {
+    private fun ViewHolder.setDownload(update: UpdateItem, downloadUrl: String, filename: String) {
 
         fun getDownloadUri(): Uri {
             val romsDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "Roms")
@@ -164,19 +169,22 @@ UpdatesListAdapter(private val mContext: Context, private var dataSet: ArrayList
         // 设置在什么网络情况下进行下载
         downloadRequest.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI)
         //设置通知栏标题
-        downloadRequest.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+        //downloadRequest.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+        downloadRequest.setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN)
         // request.setTitle(filename)
         // request.setDescription(desc)
         // 设置下载目录为系统的下载目录
         //downloadRequest.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename)
         downloadRequest.setDestinationUri(getDownloadUri())
 
-        var downloadId: Long = -1 // 用于保存下载任务的ID
-
-
         // 更新下载按钮的文本
         fun updateActionButtonText(text: String) {
             actionButton.text = text
+            if (text == mContext.getString(R.string.update_download) || text == mContext.getString(R.string.update_flash)) {
+                showProgress(false)
+            } else {
+                showProgress(true)
+            }
         }
 
         // 更新按钮点击事件
@@ -189,21 +197,23 @@ UpdatesListAdapter(private val mContext: Context, private var dataSet: ArrayList
 
         // 暂停下载任务
         fun pauseDownload() {
-            downloadManager.remove(downloadId)
+            downloadManager.remove(update.downloadID!!)
             updateActionButtonText(mContext.getString(R.string.update_download))
         }
 
-
         // 开始下载任务
         fun startDownload() {
-            downloadId = downloadManager.enqueue(downloadRequest)
+            // 设置下载ID
+            update.downloadID = downloadManager.enqueue(downloadRequest)
+            // 更新下载信息
+            update.updateInfo()
             updateActionButtonText(mContext.getString(R.string.update_downloading))
         }
 
         // 查询下载任务的状态和进度
         fun queryDownloadStatus() {
             val query = DownloadManager.Query()
-            query.setFilterById(downloadId)
+            query.setFilterById(update.downloadID!!)
 
             val cursor = downloadManager.query(query)
             if (cursor.moveToFirst()) {
@@ -214,7 +224,6 @@ UpdatesListAdapter(private val mContext: Context, private var dataSet: ArrayList
 
                 when (status) {
                     DownloadManager.STATUS_RUNNING, DownloadManager.STATUS_PENDING -> {
-                        showProgress(true)
                         val percent = progress * 100 / total
                         mProgressBar.progress = percent
                         mProgressBarPercent.text = mContext.getString(R.string.text_progress, percent)
@@ -224,7 +233,7 @@ UpdatesListAdapter(private val mContext: Context, private var dataSet: ArrayList
                             Formatter.formatFileSize(mContext, total.toLong())
                         )
 
-                        // 下载暂停，显示继续按钮
+                        // 暂停下载
                         updateActionButtonText(mContext.getString(R.string.update_pause))
                         updateActionButtonClick {
                             pauseDownload()
@@ -241,7 +250,6 @@ UpdatesListAdapter(private val mContext: Context, private var dataSet: ArrayList
 
                     DownloadManager.STATUS_SUCCESSFUL -> {
                         // 下载完成，显示安装按钮或其他操作
-                        showProgress(false)
                         updateActionButtonText(mContext.getString(R.string.update_flash))
                         updateActionButtonClick {
                             mContext.installUpdate(getDownloadUri())
@@ -275,6 +283,7 @@ UpdatesListAdapter(private val mContext: Context, private var dataSet: ArrayList
                 }
             }
         }
-        timer.schedule(timerTask, 0, 1000) // 每隔1秒查询一次下载状态
+        // 每隔1秒查询一次下载状态
+        timer.schedule(timerTask, 0, 1000)
     }
 }
