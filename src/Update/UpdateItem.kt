@@ -36,7 +36,7 @@ class UpdateItem(
 
     var typeTag: String = json.optString("type")
 
-    private var downloadID: Long? = null
+    var downloadID: Long? = null
 
     constructor(
         context: Context,
